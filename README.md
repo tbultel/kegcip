@@ -5,4 +5,4 @@ Inspired from various existing CIP (Clean In Place) Open Source projects, this o
 aim to be a kind of best-off, leveraging the original designers spirit and 
 brilliant ideas, but trying to bring more robustness, and reusability.
 
-We only focuse here on the microcontroller code and hardware.
+We only focus here on the microcontroller code and hardware.
