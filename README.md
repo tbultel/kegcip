@@ -1,5 +1,6 @@
 # kegcip
-Clean In Place controller for Beer Kegs
+
+CIP controller for Beer Tanks and Kegs
 
 Inspired from various existing CIP (Clean In Place) Open Source projects, this one
 aim to be a kind of best-off, leveraging the original designers spirit and 
