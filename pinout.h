@@ -7,6 +7,7 @@
 #define PIN_START_BUTTON          3
 #define PIN_LEVEL1                4
 #define PIN_LEVEL2                5
+#define PIN_LEVEL3                6
 
 #define PIN_LCD_SPI_CLK           13
 #define PIN_LCD_SPI_MOSI          11
