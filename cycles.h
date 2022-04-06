@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "kegcip.h"
 
 typedef enum {
 	RINCAGE = 0,
@@ -10,6 +11,9 @@ typedef enum {
 	LAVAGE_WHIRLPOOL,
 	LAVAGE_FERMENTEURS,
 	LAVAGE_FUTS,
+#ifdef TEST
+	CYCLE_TEST,
+#endif	
 	CYCLE_LAST
 } CYCLE_ID;
 

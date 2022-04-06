@@ -1,7 +1,16 @@
 # Yes, TEENSY32 uses teensy31 description in boards.txt
 
 BOARD_TAG    = teensy31
-ARDUINO_LIBS = U8g2 Wire DallasTemperature SPI RotaryEncoder OneWire TeensyThreads
+
+ARDUINO_LIBS = U8g2
+ARDUINO_LIBS += Wire 
+ARDUINO_LIBS += DallasTemperature
+ARDUINO_LIBS += SPI
+ARDUINO_LIBS += RotaryEncoder
+ARDUINO_LIBS += OneWire
+ARDUINO_LIBS += TeensyThreads
+ARDUINO_LIBS += Bounce2
+ARDUINO_LIBS += EEPROM
 
 # the boards.txt is buggy and contains unsupported frequencies for TEENSY32.
 # So we force it here

@@ -4,7 +4,7 @@
 #include "thread.h"
 #include "pinout.h"
 
-#define TEMPERATURE_CYCLE_MS	2000
+#define TEMPERATURE_CYCLE_MS	2*ONE_SECOND
 
 OneWire oneWire(PIN_ONE_WIRE_BUS); 
 DallasTemperature sensor(&oneWire);
@@ -22,11 +22,12 @@ static void temp_thread() {
 }
 
 void temperature_init() {
+	printf("Initializing temperature thread\n");
 	static bool initialized = false;
 	if (initialized)
 		return;
 
-    tempThreadId    = threads.addThread(temp_thread, 0);
+    tempThreadId = threads.addThread(temp_thread, 0);
 	initialized = true;
 }
 

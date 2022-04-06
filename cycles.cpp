@@ -3,40 +3,26 @@
 
 #include "cycles.h"
 #include "thread.h"
-#include "relays.h"
+#include "logical_output.h"
+#include "status_led.h"
+#include "main_menu.h"
+#include "horameter.h"
 
-#define RELAYS_OFF	0x0000
-
-
-#define EV1		(1<<0)
-#define EV2		(1<<1)
-#define EV3		(1<<2)
-#define EV4		(1<<3)
-#define EV5		(1<<4)
-#define EV5p	(1<<5)
-#define EV5pp	(1<<6)
-#define EV6		(1<<7)
-#define EV7		(1<<8)
-#define EV8		(1<<9)
-#define EV9		(1<<10)
-#define EV10	(1<<11)
-#define EV11	(1<<12)
-#define PUMP	(1<<13)
-#define THERM	(1<<14)
+HORAMETER * horameter;
 
 #define ONE_MINUTE	60
 
 CYCLE_STATE rincage[] = {
-	{ "Initial", 				RELAYS_OFF,			5 },
-	{ "Remplissage eau", 		EV2|EV4|EV6|PUMP,	5 },
-	{ "Cycle eau", 				EV4|EV5|EV6|PUMP,	5 },
-	{ "Vidange eau", 			EV4|EV5|EV8|PUMP,	5 },
+	{ "Initial", 				RELAYS_OFF,			1 },
+	{ "Remplissage eau", 		EV2|EV4|EV6|PUMP,	1 },
+	{ "Cycle eau", 				EV4|EV5|EV6|PUMP,	1 },
+	{ "Vidange eau", 			EV4|EV5|EV8|PUMP,	1 },
 	{ NULL,						RELAYS_OFF,			0 }
 };
 
 
 CYCLE_STATE desinfection_fermenteurs[] = {
-	{ "Initial",				RELAYS_OFF,					5 },
+	{ "Initial",				RELAYS_OFF,					1 },
 	{ "Remplissage Acide",		EV3|EV5|EV5pp|PUMP,			5 },
 	{ "Fermeture cuve acide",	RELAYS_OFF,					5 },
 	{ "Cycle acide principal 1",EV4|EV5|EV6|PUMP,			5 },
@@ -53,6 +39,29 @@ CYCLE_STATE desinfection_fermenteurs[] = {
 	{ NULL, 					RELAYS_OFF,					0 }
 };
 
+#ifdef TEST
+CYCLE_STATE cycle_test[] = {
+	{ "Initial",				RELAYS_OFF,					1 },
+	{ "EV1", 					EV1,						1 },
+	{ "EV2", 					EV2,						1 },
+	{ "EV3", 					EV3,						1 },
+	{ "EV4", 					EV4,						1 },
+	{ "EV5", 					EV5,						1 },
+	{ "EV5p", 					EV5p,						1 },
+	{ "EV5pp", 					EV5pp,						1 },
+	{ "EV6", 					EV6,						1 },
+	{ "EV7", 					EV7,						1 },
+	{ "EV8", 					EV8,						1 },
+	{ "EV9", 					EV9,						1 },
+	{ "EV10", 					EV10,						1 },
+	{ "EV11", 					EV11,						1 },
+	{ "PUMP", 					PUMP,						1 },
+	{ "THERM", 					THERM,						10 },
+	{ "BUZ", 					BUZ,						1 },
+	{ NULL, 					RELAYS_OFF,					0 }
+};
+#endif
+
 typedef struct { 
 	CYCLE_ID 			id;
 	const CYCLE_STATE* 	states;
@@ -67,14 +76,16 @@ CYCLE cycles[] = {
 	{ LAVAGE_WHIRLPOOL, 		NULL,						NULL },
 	{ LAVAGE_FERMENTEURS, 		NULL,						NULL },
 	{ LAVAGE_FUTS, 				NULL,						NULL },
+	{ LAVAGE_FUTS, 				NULL,						NULL },
+#ifdef TEST
+	{ CYCLE_TEST, 				cycle_test,					NULL },
+#endif /* TEST*/ 	
 	{ CYCLE_LAST, 				NULL,						NULL }
 };
 
 
 static cyclesCallback cycles_callback = NULL;
 static CYCLE * currentCycle = NULL;
-
-#define ONE_SECOND	1000
 
 static int cycleThreadId = -1;
 
@@ -89,7 +100,11 @@ static void cycle_thread() {
 
 		if (currentCycle == NULL)
 			continue;
-		
+
+		main_menu_disable();
+		status_led_blink(false);
+		status_led_set_state(true);
+
 		printf("%s: starting cycle %d\n", __func__, currentCycle->id);
 		uint32_t totalSecs = 0;
 		uint32_t elapsedSecs = 0;
@@ -108,21 +123,28 @@ static void cycle_thread() {
 		while (true) {
 			const CYCLE_STATE * state = currentCycle->currentState;
 
-			if (cycles_callback)
-				cycles_callback(state->desc, elapsedSecs, totalSecs);
-
-			set_relays(state->relays);
+			logical_output_set(state->relays);
 
 			// Is this the last state ?
 			if (state->desc == NULL)
 				break;
 
-			threads.delay(state->delaySec*ONE_SECOND);
-			elapsedSecs += state->delaySec;
+			// perform a smooth bargraph progression
+			for (uint32_t ix=0; ix<state->delaySec; ix++) {
+				if (cycles_callback)
+					cycles_callback(state->desc, ++elapsedSecs, totalSecs);
+				threads.delay(ONE_SECOND);
+			}
+		
 			currentCycle->currentState++;
 		}
 
 		printf("%s: ended cycle %d\n", __func__, currentCycle->id);
+		horameter_save();
+
+		status_led_blink(true);
+		main_menu_enable();
+
 		currentCycle = NULL;
 
 	}
@@ -157,6 +179,7 @@ end:
 }
 
 void cycles_init() {
+	printf("Initializing cycles\n");
 	static bool initialized = false;
 	if (initialized)
 		return;

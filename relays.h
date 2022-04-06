@@ -2,33 +2,19 @@
 
 #include <stdint.h>
 
-typedef enum {
-	EV1 = 0,
-	EV2,
-	EV3,
-	EV4,
-	EV5,
-	EV6,
-	EV7,
-	EV8,
-	EV9,
-	EV10,
-	EV11,
-	POMPE,
-	THERMOPLONGEUR,
-	LAST
-} RELAY_ID;
-
-typedef struct {
-	RELAY_ID id;
-	const char* name;
-} RELAYS;
-
 extern void relays_init(void);
 
-extern void set_relay_on(RELAY_ID relay);
-extern void set_relay_off(RELAY_ID relay);
+extern void relays_set_relay_on(uint16_t relay_pos);
+extern void relays_set_relay_off(uint16_t relay_pos);
 
-extern void set_all_relays_off();
+extern void relays_set_all_off();
 
-extern void set_relays(uint16_t relays);
+extern void relays_set(uint16_t relays);
+
+typedef void (*relay_callback)(uint16_t relays);
+
+extern void relays_register_callback(relay_callback);
+
+extern void relays_get(uint16_t* relays);
+
+extern const char* relays_get_name(uint16_t relay);

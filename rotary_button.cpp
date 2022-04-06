@@ -7,15 +7,19 @@
 
 RotaryEncoder menuselect(PIN_MENUSELECT_1, PIN_MENUSELECT_2);
 
-static rotaryCallback forwardCallback =NULL;
-static rotaryCallback backwardCallback =NULL;
+static rotaryCallback forwardCallback = NULL;
+static rotaryCallback backwardCallback = NULL;
+static rotaryCallback clickCallback = NULL;
 
 static void rotaryClickIsr() {
 	printf("Rotary Click\n");
-//	threads.restart(displayThreadId);
+
+	if (clickCallback)
+		clickCallback();
 }
 
 void rotary_button_init() {
+	printf("Initializing rotary\n");
 	static bool initialized = false;
 	if (initialized)
 		return;
@@ -44,7 +48,13 @@ void rotary_tick() {
 		backwardCallback();
 }
 
-void rotary_register_callbacks(rotaryCallback forward, rotaryCallback backward) {
+void rotary_register_callbacks(
+	rotaryCallback forward, 
+	rotaryCallback backward,
+	rotaryCallback click
+	) {
 	forwardCallback = forward;
 	backwardCallback = backward;
+	clickCallback = click;
 }
+
