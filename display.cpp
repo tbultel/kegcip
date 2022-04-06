@@ -367,9 +367,9 @@ static void display_diag2() {
 			display_horameter_actions(30*jx+1, VANNES_POS_Y+ix*(VANNES_BOXSIZE+1), horameter.nb[id], name );
 		}
 	}
-#endif	
+#endif
 
-	display_horameter_hours(1, SCREEN_HEIGHT-VANNES_BOXSIZE, horameter.pump, relays_get_name(NB_VANNES+1));
+	display_horameter_hours(1, SCREEN_HEIGHT-VANNES_BOXSIZE, horameter.pump, relays_get_name(NB_VANNES));
 	display_horameter_hours(SCREEN_WIDTH/2, SCREEN_HEIGHT-VANNES_BOXSIZE, horameter.thermo, relays_get_name(NB_VANNES+1));
 
 	// only display names once
