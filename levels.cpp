@@ -20,8 +20,8 @@ void levels_init()  {
 // (liquid presence makes the input LOW)
 
 void levels_get(bool* level1,  bool* level2, bool* level3) {
-  *level1 = !soda_low()
-  *level2 = !water_low();	
+  *level1 = !soda_low();
+  *level2 = !water_low();
   *level3 = !acid_low();
 }
 
