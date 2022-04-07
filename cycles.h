@@ -12,18 +12,21 @@ typedef enum {
 	LAVAGE_FERMENTEURS,
 	LAVAGE_FUTS,
 #ifdef TEST
-	CYCLE_TEST,
+	CYCLE_TEST_OUTPUT,
+	CYCLE_TEST_ENZYMES,
 #endif	
 	CYCLE_LAST
 } CYCLE_ID;
 
 typedef bool (*TRANSITION) (void);
+typedef bool (*ACTION) (void);
 
 typedef struct {
 	const char* name;
 	uint16_t	relays;
 	uint32_t	delaySec;	// cycle delay, in seconds
 	TRANSITION	transition;	// condition to go to next state, in addition to delay
+	ACTION		action;		// action done when entering state
 } CYCLE_STATE;
 
 extern void cycles_init();

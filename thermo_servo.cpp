@@ -13,10 +13,15 @@
 #include "rotary_button.h"
 
 static float thermo_setpoint = 0.0;
+static float thermo_target_setpoint = 0.0;
+
 static int thermoServoThreadId = -1;
 static bool thermo_is_on = false;
 static bool initialized = false;
 static bool ready = false;
+
+static void thermo_servo_set_setpoint(float setpoint);
+static void thermo_servo_set_target_setpoint(float target_setpoint);
 
 #define THERMO_SERVO_THREAD_PERIOD_MS	500
 
@@ -59,7 +64,7 @@ static void thermo_servo_thread() {
 			cycle_stop();
 			relays_set(RELAYS_OFF);
 
-			thermo_servo_set_setpoint(0);
+			thermo_servo_set_setpoint(0.0);
 			main_menu_disable();
 			start_button_disable();
 			rotary_button_disable();
@@ -89,7 +94,7 @@ void thermo_servo_init() {
 	while (!ready) { delay(100); }
 }
 
-void thermo_servo_set_setpoint(float setpoint) {
+static void thermo_servo_set_setpoint(float setpoint) {
 
 	if (setpoint < 0.0)
 		setpoint = 0.0;
@@ -111,13 +116,34 @@ float thermo_servo_get_setpoint(void) {
 }
 
 void thermo_on(void) {
+	printf("%s\n", __func__);
 	if (!thermo_is_on)
-		thermo_servo_set_setpoint(THERMO_SERVO_TEMP_DEFAULT);
+		thermo_servo_set_setpoint(thermo_target_setpoint);
 	thermo_is_on = true;
 }
 
 void thermo_off(void) {
+	printf("%s\n", __func__);	
 	if (thermo_is_on)
-		thermo_servo_set_setpoint(0);	
+		thermo_servo_set_setpoint(0.0);	
 	thermo_is_on = false;
+}
+
+bool thermo_set_enzyme_setpoint(void) {
+	thermo_servo_set_target_setpoint(THERMO_SERVO_TEMP_ENZYME);
+	return true;
+}
+
+bool thermo_set_standard_setpoint(void) {
+	thermo_servo_set_target_setpoint(THERMO_SERVO_TEMP_DEFAULT);
+	return true;
+}
+
+static void thermo_servo_set_target_setpoint(float target_setpoint) {
+	char tempS[8];
+    dtostrf(target_setpoint, 4, 1, tempS);
+	printf("thermo thermo_target_setpoint set to %s\n", tempS);
+	thermo_target_setpoint = target_setpoint;
+	if (thermo_is_on)
+		thermo_servo_set_setpoint(thermo_target_setpoint);
 }

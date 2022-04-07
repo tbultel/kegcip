@@ -166,7 +166,7 @@ static void displayProgressBar(uint16_t xpos, uint16_t ypos, uint16_t width, uin
 
 #define CYCLE_DISPLAY_POS_Y MENU_POS_Y+10
 
-static char * lastStateName = NULL;
+static const char * lastStateName = NULL;
 static uint32_t lastSeconds = 0;
 static uint32_t lastTotalSeconds = 0;
 

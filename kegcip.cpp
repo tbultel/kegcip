@@ -33,7 +33,7 @@ void setup() {
 
     relays_init();
 
-	delay(3000);
+	delay(1000);
 
     status_led_init();
 
