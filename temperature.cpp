@@ -10,10 +10,16 @@ OneWire oneWire(PIN_ONE_WIRE_BUS);
 DallasTemperature sensor(&oneWire);
 
 static int tempThreadId = -1;
+static bool initialized = false;
+static bool ready = false;
 
 static float current_temperature = -50.0;
 
 static void temp_thread() {
+
+	ready = true;
+	printf("Temperature thread ready\n");
+
     while (true) {
       sensor.requestTemperatures();
 	  current_temperature = sensor.getTempCByIndex(0);
@@ -22,15 +28,16 @@ static void temp_thread() {
 }
 
 void temperature_init() {
-	printf("Initializing temperature thread\n");
-	static bool initialized = false;
 	if (initialized)
 		return;
 
+	printf("Initializing temperature thread\n");
+
     tempThreadId = threads.addThread(temp_thread, 0);
+	while (!ready) { delay(100); }
+
 	initialized = true;
 }
-
 
 float temperature_get() {
 	return current_temperature;

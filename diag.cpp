@@ -41,10 +41,7 @@ void diag_init() {
 	printf("Initializing diag.\n");
 		
 	diagThreadId = threads.addThread(diag_thread, 0);
-
-	while (!ready) {
-		delay(100);
-	}
+	while (!ready) { delay(100); }
 
 	initialized = true;
 }
@@ -54,8 +51,6 @@ void diag_thread_wakeup() {
 	if (!initialized)
 		return;
 
-	printf("%s\n", __func__);
-
 	suspended = false;
 	threads.restart(diagThreadId);
 }
@@ -63,8 +58,6 @@ void diag_thread_wakeup() {
 void diag_thread_suspend() {
 	if (!initialized)
 		return;
-
-	printf("%s\n", __func__);
 
 	suspended = true;
 	threads.suspend(diagThreadId);

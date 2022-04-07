@@ -1,8 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-
-#define NB_VANNES 13
+#include "logical_output.h"
 
 typedef struct  __attribute__((__packed__)) {
 	uint32_t pump;

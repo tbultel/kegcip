@@ -10,9 +10,9 @@ void levels_init()  {
 	if (initialized)
 		return;
 
-    pinMode(PIN_LEVEL1, INPUT_PULLUP);
-    pinMode(PIN_LEVEL2, INPUT_PULLUP);
-	pinMode(PIN_LEVEL3, INPUT_PULLUP);
+    pinMode(PIN_SODA_LOW, INPUT_PULLUP);
+    pinMode(PIN_WATER_LOW, INPUT_PULLUP);
+	pinMode(PIN_ACID_LOW, INPUT_PULLUP);
 	initialized = true;
 }
 
@@ -20,7 +20,19 @@ void levels_init()  {
 // (liquid presence makes the input LOW)
 
 void levels_get(bool* level1,  bool* level2, bool* level3) {
-  *level1 = !digitalRead(PIN_LEVEL1);
-  *level2 = !digitalRead(PIN_LEVEL2);	
-  *level3 = !digitalRead(PIN_LEVEL3);
+  *level1 = !soda_low()
+  *level2 = !water_low();	
+  *level3 = !acid_low();
+}
+
+bool soda_low() {
+	return digitalRead(PIN_SODA_LOW);
+}
+
+bool water_low() {
+	return digitalRead(PIN_WATER_LOW);
+}
+
+bool acid_low() {
+	return digitalRead(PIN_ACID_LOW);
 }

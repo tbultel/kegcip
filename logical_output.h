@@ -21,5 +21,11 @@
 #define THERM	(1<<14)
 #define BUZ		(1<<15)
 
+#define NB_VANNES	13
+
+#define PUMP_OUTPUT_N		13
+#define THERM_OUTPUT_N		14
+#define BUZZ_OUTPUT__N		15
+
 extern void logical_output_init();
 extern void logical_output_set(uint16_t output);

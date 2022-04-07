@@ -7,17 +7,22 @@
 #include "relays.h"
 #include "logical_output.h"
 #include "display.h"
+#include "main_menu.h"
+#include "start_button.h"
+#include "cycles.h"
+#include "rotary_button.h"
 
 static float thermo_setpoint = 0.0;
-
 static int thermoServoThreadId = -1;
-
 static bool thermo_is_on = false;
+static bool initialized = false;
+static bool ready = false;
 
 #define THERMO_SERVO_THREAD_PERIOD_MS	500
 
 static void thermo_servo_thread() {
-	printf("%s started\n", __func__);
+	ready = true;
+	printf("Thrermo thread ready\n");
 
 	bool heating = false;
 
@@ -34,8 +39,9 @@ static void thermo_servo_thread() {
 #endif		
 
 		if (thermo_is_on && temp < thermo_setpoint) {
-			if (!heating)
+			if (!heating) {
 				printf("%s: heating ...\n", __func__);
+			}
 
 			heating = true;
 			alarm_countdown--;
@@ -48,11 +54,17 @@ static void thermo_servo_thread() {
 			alarm_countdown = THERMO_SERVO_RUNAWAY_DELAY_SEC;
 		}
 
-		// While heating, we check that the temperature changes
-
+		// check the heating timeout 
 		if (heating && alarm_countdown < 0) {
-			printf("ERROR temperature runwaway !\n");
+			cycle_stop();
+			relays_set(RELAYS_OFF);
+
 			thermo_servo_set_setpoint(0);
+			main_menu_disable();
+			start_button_disable();
+			rotary_button_disable();
+			display_set_context(ALARM_CONTEXT);
+			printf("ERROR temperature runwaway !\n");
 		}
 
 		if (heating) {
@@ -69,13 +81,12 @@ static void thermo_servo_thread() {
 }
 
 void thermo_servo_init() {
-	printf("Initializing thermo\n");
-	static bool initialized = false;
 	if (initialized)
 		return;
 
+	printf("Initializing thermo\n");
 	thermoServoThreadId = threads.addThread(thermo_servo_thread, 0);
-
+	while (!ready) { delay(100); }
 }
 
 void thermo_servo_set_setpoint(float setpoint) {

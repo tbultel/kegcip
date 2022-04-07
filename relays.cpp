@@ -10,6 +10,7 @@
 
 static void relay_thread();
 static int relayThreadId = -1;
+static bool ready = false;
 
 static const char* relays_name[16]= {
 	"EV1",
@@ -32,15 +33,15 @@ static const char* relays_name[16]= {
 
 // State of relays
 static uint16_t relays_state = 0x0000;
-
 static relay_callback relay_change_callback = NULL;
+static bool initialized = false;
 
 void relays_init() {
-	printf("Initializing relays\n");
 
-	static bool initialized = false;
 	if (initialized)
 		return;
+
+	printf("Initializing relays\n");
 
     // I2C Relay board setup
     Wire.setSDA(18);
@@ -59,6 +60,7 @@ void relays_init() {
     Wire.endTransmission();  
 
     relayThreadId   = threads.addThread(relay_thread, 0);
+	while (!ready) { delay(100); }
 
 	initialized = true;
 
@@ -66,30 +68,34 @@ void relays_init() {
 
 static void do_set_relays(uint16_t relays) {
 
-  uint8_t variable_LOW = lowByte(relays);
-  uint8_t variable_HIGH = highByte(relays);
+	uint8_t variable_LOW = lowByte(relays);
+ 	uint8_t variable_HIGH = highByte(relays);
 
-  Wire.beginTransmission(IO_BOARD_ADDR);
-  Wire.write(0x12);            // address bank A
-  Wire.write(variable_LOW);
-  Wire.endTransmission();
+ 	Wire.beginTransmission(IO_BOARD_ADDR);
+ 	Wire.write(0x12);            // address bank A
+ 	Wire.write(variable_LOW);
+	Wire.endTransmission();
 
-  Wire.beginTransmission(IO_BOARD_ADDR);
-  Wire.write(0x13);            // address bank B
-  Wire.write(variable_HIGH);
-  Wire.endTransmission();
+	Wire.beginTransmission(IO_BOARD_ADDR);
+	Wire.write(0x13);            // address bank B
+	Wire.write(variable_HIGH);
+	Wire.endTransmission();
 }
 
 static void relay_thread() {
-  int myId = threads.id();
-  while (true) {
+	int myId = threads.id();
 
-    threads.suspend(myId);
-    threads.yield();
+	ready = true;
+	printf("Relay thread ready\n");
 
-    // takes time.
-    do_set_relays(relays_state);
-  }
+	while (true) {
+
+		threads.suspend(myId);
+		threads.yield();
+
+		// takes time.
+		do_set_relays(relays_state);
+	}
 }
 
 static void relays_set_state(uint16_t relays) {
@@ -105,31 +111,50 @@ static void relays_set_state(uint16_t relays) {
 }
 
 void relays_set_relay_on(uint16_t relay) {
+	if (!initialized)
+		return;
 	relays_set_state(relays_state | relay);
 }
 
 void relays_set_relay_off(uint16_t relay) {
+	if (!initialized)
+		return;
 	relays_set_state(relays_state & ~relay);
 }
 
 void relays_set_all_off() { 
+	if (!initialized)
+		return;
+
 	relays_set_state(0x0000);
 }
 
 void relays_set(uint16_t relays) {
+	if (!initialized)
+		return;
+
 	relays_set_state(relays);
 }
 
 void relays_register_callback(relay_callback cb) {
+	if (!initialized)
+		return;
+
 	relay_change_callback = cb;
 }
 
 void relays_get(uint16_t* relays) {
+	if (!initialized)
+		return;
+
 	if (relays == NULL)
 		return;
 	*relays = relays_state;
 }
 
 const char* relays_get_name(uint16_t relay) {
+	if (!initialized)
+		return NULL;
+
 	return relays_name[relay];
 }

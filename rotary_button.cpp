@@ -10,19 +10,22 @@ RotaryEncoder menuselect(PIN_MENUSELECT_1, PIN_MENUSELECT_2);
 static rotaryCallback forwardCallback = NULL;
 static rotaryCallback backwardCallback = NULL;
 static rotaryCallback clickCallback = NULL;
+static bool initialized = false;
+static bool enabled = true;
 
 static void rotaryClickIsr() {
-	printf("Rotary Click\n");
+	if (!enabled)
+		return;
 
 	if (clickCallback)
 		clickCallback();
 }
 
 void rotary_button_init() {
-	printf("Initializing rotary\n");
-	static bool initialized = false;
 	if (initialized)
 		return;
+
+	printf("Initializing rotary\n");
 
     pinMode(PIN_MENUCLICK, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(PIN_MENUCLICK), rotaryClickIsr, FALLING);
@@ -31,6 +34,12 @@ void rotary_button_init() {
 }
 
 void rotary_tick() {
+	if (!initialized)
+		return;
+
+	if (!enabled)
+		return;
+
 	menuselect.tick();
 	int motion = 0;
 	static int oldpos = 0;
@@ -53,8 +62,20 @@ void rotary_register_callbacks(
 	rotaryCallback backward,
 	rotaryCallback click
 	) {
+	
+	if (!initialized)
+		return;
+
 	forwardCallback = forward;
 	backwardCallback = backward;
 	clickCallback = click;
 }
 
+
+void rotary_button_enable() {
+	enabled = true;
+}
+
+void rotary_button_disable() {
+	enabled = false;
+}

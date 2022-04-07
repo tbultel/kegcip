@@ -8,12 +8,14 @@
 
 static bool ledState = false;
 static int ledThreadId = -1;
+static bool initialized = false;
+static bool ready = false;
 
 static uint32_t led_period_ms = DEFAULT_LED_PERIOD_MS;
 
 
 static void set_status_led(bool state) {
-   digitalWrite(PIN_BUTTON_LED, state?HIGH:LOW);    
+	digitalWrite(PIN_BUTTON_LED, state?HIGH:LOW);    
 }
 
 void status_led_set_period(uint32_t periodms) {
@@ -31,20 +33,12 @@ void status_led_set_state(bool state) {
 	ledState = state;
 }
 
-static bool ready = false;
-
-bool status_led_thread_ready() {
-	return ready;
-}
-
 static void led_thread() {
 
+	ready = true;
 	printf("Led thread started\n");
 
-	ready = true;
-
   	int myId = threads.id();
-
 	threads.suspend(myId);
   	threads.yield();
  
@@ -62,14 +56,15 @@ static void led_thread() {
 }
 
 void status_led_init() {
-	printf("Initializing led\n");
-	static bool initialized = false;
+
 	if (initialized)
 		return;
-    
+
+	printf("Initializing led\n");    
     pinMode(PIN_BUTTON_LED, OUTPUT);
 
 	ledThreadId = threads.addThread(led_thread, 0);
+	while (!ready) { delay(100); }	
 
 	initialized = true;
 }

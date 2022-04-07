@@ -17,10 +17,13 @@ typedef enum {
 	CYCLE_LAST
 } CYCLE_ID;
 
+typedef bool (*TRANSITION) (void);
+
 typedef struct {
-	const char* desc;
+	const char* name;
 	uint16_t	relays;
 	uint32_t	delaySec;	// cycle delay, in seconds
+	TRANSITION	transition;	// condition to go to next state, in addition to delay
 } CYCLE_STATE;
 
 extern void cycles_init();
@@ -30,3 +33,7 @@ extern bool cycle_start(CYCLE_ID cycle);
 typedef void (*cyclesCallback)(const char *stateName, uint32_t seconds, uint32_t totalSeconds);
 
 extern void cycles_set_callback(cyclesCallback cb);
+
+extern const char* cycles_get_name(CYCLE_ID);
+
+extern void cycle_stop();

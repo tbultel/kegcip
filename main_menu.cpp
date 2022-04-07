@@ -6,44 +6,39 @@
 #include "rotary_button.h"
 #include "display.h"
 
-const MENU menus[] = {
-	{ RINCAGE,					"Rinçage" },
-	{ DESINFECTION_FERMENTEURS, "Désinf. fermenteurs" },
-	{ WHIRLPOOL, 				"Whirlpool" },
-	{ TRANSFER, 				"Transfer" },
-	{ LAVAGE_WHIRLPOOL,			"Lav. whirlpool" },
-	{ LAVAGE_FERMENTEURS,		"Lav. fermenteurs" },
-	{ LAVAGE_FUTS,				"Lav. Fûts" },
-#ifdef TEST
-	{ CYCLE_TEST,				"Test !" },
-#endif	
-	{ CYCLE_LAST, 				NULL }
-};
 
+// start menu
 static CYCLE_ID currentMenu = RINCAGE;
 static bool main_menu_enabled = true;
+static bool initialized = false;
 
 CYCLE_ID main_menu_getid() {
 	return currentMenu;
 }
 
 const char* main_menu_name() {
-	return menus[currentMenu].desc;
+	return cycles_get_name(currentMenu);
 }
 
 static void setNextMenu() {
+	if (!initialized)
+		return;
+
 	if (!main_menu_enabled)
 		return;
 	int menu = currentMenu;
 	menu++;
-	if (menu >= CYCLE_LAST )
-		menu = 0;
+	menu %= CYCLE_LAST;
+
 	currentMenu = (CYCLE_ID) menu;
 	display_menu();
 	display_thread_wakeup();
 }
 
 static void setPrevMenu() {
+	if (!initialized)
+		return;
+
 	if (!main_menu_enabled)
 		return;
 
@@ -57,12 +52,13 @@ static void setPrevMenu() {
 }
 
 static void onClick() {
-	printf("%s\n", __func__);
-	display_swap_context();
+	if (!initialized)
+		return;
+
+	display_roll_context();
 }
 
 void main_menu_init() {
-	static bool initialized = false;
 	if (initialized)
 		return;
 

@@ -8,7 +8,7 @@
 
 const uint16_t eeprom_start_address = 0x0000;
 #define EEPROM_UNINITIALIZED_VALUE	0xFFFFFFFF
-
+static bool initialized = false;
 static HORAMETER horameter;
 
 static void horameter_read();
@@ -37,7 +37,6 @@ static void horameter_print() {
 }
 
 void horameter_init() {
-	static bool initialized = false;
 	if (initialized)
 		return;
 
@@ -67,12 +66,13 @@ void horameter_init() {
 	}
 
 	if (need_init) {
-		printf("Initialized zones detected, fixing it !\n");
+		printf("Uninitialized zones detected, fixing it !\n");
 		horameter_save();
 	}
 
 	relays_register_callback(horameter_relay_callback);
 
+	initialized = true;
 	printf("Init of horameters done.\n");
 }
 
@@ -94,6 +94,7 @@ void horameter_save() {
 	horameter_write();
 }
 
+// This callback is called by the relays layer, upon each relay change
 static void horameter_relay_callback(uint16_t relays) {
 	
 	static uint32_t pump_start = 0;

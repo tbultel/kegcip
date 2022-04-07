@@ -11,7 +11,7 @@
 #include "diag.h"
 #include "relays.h"
 #include "horameter.h"
-
+#include "bitmaps.h"
 
 #define SCREEN_WIDTH	128
 #define SCREEN_HEIGHT	64
@@ -22,6 +22,7 @@
 static uint8_t currentContext = MAIN_MENU_CONTEXT;
 static int displayThreadId = -1;
 static bool ready = false;
+static bool initialized = false;
 
 #ifdef SW_SPI
 U8G2_SSD1309_128X64_NONAME2_F_4W_SW_SPI u8g2(
@@ -39,8 +40,13 @@ U8G2_SSD1309_128X64_NONAME2_F_4W_HW_SPI u8g2(
   PIN_LCD_RST);  
 #endif
 
+static void display_alarm_context();
+static void display_swap_context();
 
 void display_temperature() {
+
+	if (!initialized)
+		return;
 
 	float temperature = temperature_get();
 	float setpoint = thermo_servo_get_setpoint();
@@ -51,7 +57,7 @@ void display_temperature() {
 	dtostrf(setpoint, 4, 1, setpointS);
 	u8g2.setFont(u8g2_font_5x8_mf);
   	char msg[32];
-  	sprintf(msg, "%s°C / %s°C ", tempS, setpointS);
+  	sprintf(msg, "%s°C/%s°C ", tempS, setpointS);
 	// At the very top of the screen
   	u8g2.drawUTF8(1, fontHeight, msg);
 
@@ -63,11 +69,28 @@ void display_temperature() {
 #define LEVELS_BOXSIZE	8
 #define LEVELS_RADIUS	2
 
+typedef struct {
+	const char * name;
+	bool		 state;
+} LEVEL;
+
+LEVEL levels[] = {
+	{ "Soude", false },
+	{ "Eau", false },
+	{ "Acide", false },
+};
+
+#define LEVEL_SPACING	40
+
 void display_levels() {
 
-	bool level[3];
+	if (!initialized)
+		return;
 
-	levels_get(&level[0], &level[1], &level[2]);
+	if (currentContext == ALARM_CONTEXT)
+		return;
+
+	levels_get(&levels[0].state, &levels[1].state, &levels[2].state);
 
 	// Erase Area
 	u8g2.setDrawColor(0);
@@ -75,17 +98,22 @@ void display_levels() {
 	u8g2.setDrawColor(1);
 
 	for (int ix=0; ix<3; ix++) {
-		if (level[ix])
-			u8g2.drawRBox(1+ix*20, LEVELS_POS, LEVELS_BOXSIZE ,LEVELS_BOXSIZE, LEVELS_RADIUS);
+		if (levels[ix].state)
+			u8g2.drawRBox(1+ix*LEVEL_SPACING, LEVELS_POS, LEVELS_BOXSIZE ,LEVELS_BOXSIZE, LEVELS_RADIUS);
 		else
-			u8g2.drawRFrame(1+ix*20, LEVELS_POS, LEVELS_BOXSIZE ,LEVELS_BOXSIZE, LEVELS_RADIUS);
+			u8g2.drawRFrame(1+ix*LEVEL_SPACING, LEVELS_POS, LEVELS_BOXSIZE ,LEVELS_BOXSIZE, LEVELS_RADIUS);
+
+		u8g2.drawUTF8(10+ix*LEVEL_SPACING, LEVELS_POS+8, levels[ix].name);			
 	}
 	
 }
 
-#define MENU_POS_Y	20
+#define MENU_POS_Y	25
 
 void display_menu() {
+
+	if (!initialized)
+		return;
 
 	if (currentContext != MAIN_MENU_CONTEXT)
 		return;
@@ -95,8 +123,8 @@ void display_menu() {
     u8g2.setFont(u8g2_font_6x10_mf);
 	uint32_t width = u8g2.getUTF8Width(menu);
 
-	uint32_t height = 10; // assumed by u8g2_font_6x10_mf
-	uint32_t pos = (SCREEN_WIDTH - width) / 2;
+	uint32_t height = 8; // assumed by u8g2_font_6x10_mf
+	uint32_t pos = (SCREEN_WIDTH - width) / 2 ;
 
 	// Erase Area
 	u8g2.setDrawColor(0);
@@ -124,6 +152,9 @@ static void display_thread() {
 #define BARGRAPH_HEIGHT	5
 
 static void displayProgressBar(uint16_t xpos, uint16_t ypos, uint16_t width, uint16_t height, float progress) {
+	if (!initialized)
+		return;
+
 	if (currentContext != MAIN_MENU_CONTEXT)
 		return;
 
@@ -135,26 +166,35 @@ static void displayProgressBar(uint16_t xpos, uint16_t ypos, uint16_t width, uin
 
 #define CYCLE_DISPLAY_POS_Y MENU_POS_Y+10
 
-static void display_cycle_update_callback(const char* stateName, uint32_t seconds, uint32_t totalSeconds) {
+static char * lastStateName = NULL;
+static uint32_t lastSeconds = 0;
+static uint32_t lastTotalSeconds = 0;
 
-	printf("%s (%lu/%lu)\n", stateName, seconds, totalSeconds);
+// Notice that this code can be executed from the rotary click ISR context,
+// so no sleep is allowed
+
+static void display_cycle_update(const char* stateName, uint32_t seconds, uint32_t totalSeconds) {
 
 	if (currentContext != MAIN_MENU_CONTEXT)
 		return;
 
-	uint32_t fontHeight = 10; // assumed to be the case for u8g2_font_6x10_mf
+	if (stateName == NULL)
+		return;
+
+	uint32_t fontHeight = 8; // assumed to be the case for u8g2_font_4x6_mf
 
 	// Erase the area
 	u8g2.setDrawColor(0);
 	u8g2.drawBox(1, CYCLE_DISPLAY_POS_Y, SCREEN_WIDTH, SCREEN_HEIGHT-CYCLE_DISPLAY_POS_Y);
 	u8g2.setDrawColor(1);
 
-    u8g2.setFont(u8g2_font_6x10_mf);
-	u8g2.drawUTF8(1, CYCLE_DISPLAY_POS_Y + fontHeight, stateName);
+    u8g2.setFont(u8g2_font_4x6_mf);
+	uint32_t width = u8g2.getUTF8Width(stateName);
+	u8g2.drawUTF8((SCREEN_WIDTH-width)/2, CYCLE_DISPLAY_POS_Y + fontHeight, stateName);
 
 	char remainingTimeS[16];
 	sprintf(remainingTimeS, "Reste: %lu s", totalSeconds-seconds );
-	u8g2.drawUTF8(1, CYCLE_DISPLAY_POS_Y+ 1+2*fontHeight, remainingTimeS);
+	u8g2.drawUTF8(1, SCREEN_HEIGHT-BARGRAPH_HEIGHT-1, remainingTimeS);
 
 	float progress = (1.0*totalSeconds - seconds) / totalSeconds;
 	// at the very bottom of the screen
@@ -162,16 +202,35 @@ static void display_cycle_update_callback(const char* stateName, uint32_t second
 
 	// Is this the end ?
 	if (seconds == totalSeconds) {
-		threads.delay(ONE_SECOND);
+		lastStateName = NULL;
 		u8g2.clearBuffer();
 		display_menu();
 	}
 
 	display_thread_wakeup();
+}
+
+static void display_cycle_update_callback(const char* stateName, uint32_t seconds, uint32_t totalSeconds) {
+
+	if (!initialized)
+		return;
+
+#ifdef DEBUG
+	printf("%s (%lu/%lu)\n", stateName, seconds, totalSeconds);
+#endif	
+
+	lastStateName = stateName;
+	lastSeconds = seconds;
+	lastTotalSeconds = totalSeconds;
+
+	display_cycle_update(stateName, seconds, totalSeconds);
 
 }
 
 void display_init() {
+
+	if (initialized)
+		return;
 
 	printf("Initializing display\n");
 
@@ -180,10 +239,11 @@ void display_init() {
     u8g2.clearBuffer();
 
     displayThreadId = threads.addThread(display_thread, 0);
-
 	while (!ready) { delay(100); }
 
 	cycles_set_callback(display_cycle_update_callback);
+
+	initialized = true;
 }
 
 void display_thread_wakeup() {
@@ -191,36 +251,35 @@ void display_thread_wakeup() {
 }
 
 void display_clear_screen() {
+	if (!initialized)
+		return;
 	u8g2.clearBuffer();
 	display_thread_wakeup();
 }
 
 
 void display_welcome() {
-	printf("Display welcome message\n");
+	if (!initialized)
+		return;
 
-    u8g2.setFont(u8g2_font_10x20_tr);
-    u8g2.drawStr(1, 20, "KegCip Ready !");
+	u8g2.drawXBMP(1, 1, linatsea_width, linatsea_height, linatsea_bits);
 	display_thread_wakeup();
 }
-
-#define heart_width 13
-#define heart_height 11
-static unsigned char heart_bits[] = {
-   0x08, 0x02, 0xbc, 0x07, 0xfe, 0x0f, 0xff, 0x1f, 0xfe, 0x0f, 0xfc, 0x07,
-   0xf8, 0x03, 0xf8, 0x03, 0xe0, 0x00, 0x40, 0x00, 0x00, 0x00 };
 
 
 void display_heartbeat() {
 	static bool disp = true;
 
-	uint8_t posx = SCREEN_WIDTH-heart_width-2;
-	uint8_t posy = 1;
+	if (!initialized)
+		return;
+
+	uint8_t posx = SCREEN_WIDTH-heart_width-3;
+	uint8_t posy = 2;
 
 	u8g2.setBitmapMode(false /* solid */);
 
 	if (disp) {
-		u8g2.drawXBMP(posx, posy, heart_width, heart_height, heart_bits);
+		u8g2.drawXBM(posx, posy, heart_width, heart_height, heart_bits);
 	}
 	else {
 		u8g2.setDrawColor(0);
@@ -228,21 +287,15 @@ void display_heartbeat() {
 		u8g2.setDrawColor(1);
 	}
 
-	u8g2.updateDisplayArea((SCREEN_WIDTH-heart_width)/8, 0, 2, 2);
+	u8g2.updateDisplayArea((SCREEN_WIDTH-heart_width)/8-1, 0, 2, 1);
 
 	disp = !disp;
 }
 
-#define heating_width 16
-#define heating_height 17
-static unsigned char heating_bits[] = {
-   0x00, 0x00, 0xb0, 0x0d, 0x10, 0x09, 0x20, 0x09, 0x20, 0x11, 0x20, 0x11,
-   0x20, 0x09, 0x10, 0x09, 0x10, 0x08, 0x10, 0x09, 0x20, 0x09, 0x20, 0x11,
-   0x20, 0x11, 0x20, 0x09, 0x10, 0x08, 0xfe, 0xff, 0xff, 0xff };
 
 void display_heating(bool heat) {
 	
-	uint8_t posx = SCREEN_WIDTH-heart_width-heating_width-2;
+	uint8_t posx = SCREEN_WIDTH/2+heating_width;
 	uint8_t posy = 1;
 
 	u8g2.setBitmapMode(false /* solid */);
@@ -256,15 +309,32 @@ void display_heating(bool heat) {
 		u8g2.setDrawColor(1);
 	}
 
-	u8g2.updateDisplayArea((SCREEN_WIDTH-heart_width-heating_width)/8, 0, 2, 2);
+	u8g2.updateDisplayArea(posx/8, 0, 2, 1);
 
 }
 
-static bool displayed_vannes_names = false;
+void display_roll_context() {
+	if (!initialized)
+		return;
 
-void display_swap_context() {
 	currentContext++;
-	currentContext %= LAST_CONTEXT;
+	currentContext %= ALARM_CONTEXT;
+
+	display_swap_context();
+}
+
+void display_set_context(DISPLAY_CONTEXT context) {
+	if (!initialized)
+		return;
+
+	currentContext = context;
+	display_swap_context();
+}
+
+static void display_swap_context() {
+
+	if (!initialized)
+		return;
 
 	printf("Switched to context %d\n", currentContext);
 
@@ -273,18 +343,34 @@ void display_swap_context() {
 			diag_thread_suspend();
 			display_clear_screen();
 			display_menu();
-
-		break;
+			display_cycle_update(lastStateName, lastSeconds, lastTotalSeconds);
+			break;
 		case DIAG1_CONTEXT:
 		case DIAG2_CONTEXT:
-			displayed_vannes_names = false;
+		case DIAG3_CONTEXT:		
 			display_clear_screen();
 			diag_thread_wakeup();
+			break;
+		case ALARM_CONTEXT:
+			display_clear_screen();
+			display_alarm_context();
+			display_thread_wakeup();
+			break;
 		default: 
 		break;
 	}
 }
 
+
+/* Diagnostic screens */
+
+#define DIAG_POS_Y 28
+
+static void erase_diag_zone() {
+	u8g2.setDrawColor(0);
+	u8g2.drawBox(1, DIAG_POS_Y, SCREEN_WIDTH, SCREEN_HEIGHT-DIAG_POS_Y);
+	u8g2.setDrawColor(1);
+}
 
 #define VANNES_BOXSIZE	8
 #define VANNES_RADIUS	2
@@ -306,30 +392,37 @@ static void display_vanne(uint16_t posx, uint16_t posy, bool state, const char *
 	
 }
 
-#define VANNES_POS_Y MENU_POS_Y
-
-
 static void display_diag1() {
 	uint16_t relays;
 	relays_get(&relays);
+
+	u8g2.setFont(u8g2_font_6x10_mf);
+	u8g2.drawUTF8(1, DIAG_POS_Y, "Etat des sorties");
+
+	u8g2.setFont(u8g2_font_4x6_mf);
 
 	for (int jx=0; jx < 4; jx++) {
 		for (int ix=0; ix < 4; ix++) {
 			int id=ix+4*jx;
 			bool relay = !!(relays & (1<<id));
 
-			const char * name=displayed_vannes_names?NULL:relays_get_name(id);
-			display_vanne(30*jx+1, VANNES_POS_Y+ix*(VANNES_BOXSIZE+1), relay, name );
+			const char* name = relays_get_name(id);
+			display_vanne(30*jx+1, DIAG_POS_Y+1+ix*(VANNES_BOXSIZE+1), relay, name );
 		}
 	}
-	// only display names once
-	displayed_vannes_names = true;
+
 	display_thread_wakeup();
 }
 
 static void display_horameter_hours(uint16_t posx, uint16_t posy, uint32_t value, const char* name) {
 	char tempS[16];
-	sprintf(tempS, ":%ld h", value/3600);
+
+	if (value < 60)
+		sprintf(tempS, ":%ld seconds", value);
+	else if (value < 3600)
+		sprintf(tempS, ":%ld minutes", value/60);
+	else
+		sprintf(tempS, ":%ld hours", value/3600);
 
 	if (name)
 		u8g2.drawUTF8(posx, posy+8, name);
@@ -345,8 +438,7 @@ static void display_horameter_actions(uint16_t posx, uint16_t posy, uint32_t val
 	char tempS[16];
 	sprintf(tempS, ":%ld", value);
 
-	if (name)
-		u8g2.drawUTF8(posx, posy+8, name);
+	u8g2.drawUTF8(posx, posy+8, name);
 
 	uint32_t width = u8g2.getUTF8Width(name);
 
@@ -357,31 +449,66 @@ static void display_diag2() {
 	HORAMETER horameter;
 	horameter_get(&horameter);
 
-#if 0
-	for (int jx=0; jx < 4; jx++) {
-		for (int ix=0; ix < 4; ix++) {
-			int id=ix+4*jx;
-			if (id >= NB_VANNES)
-				break;
-			const char * name=displayed_vannes_names?NULL:relays_get_name(id);
-			display_horameter_actions(30*jx+1, VANNES_POS_Y+ix*(VANNES_BOXSIZE+1), horameter.nb[id], name );
-		}
-	}
-#endif
+	u8g2.setFont(u8g2_font_6x10_mf);
+	u8g2.drawUTF8(1, DIAG_POS_Y, "Horamètres");
 
-	display_horameter_hours(1, SCREEN_HEIGHT-VANNES_BOXSIZE, horameter.pump, relays_get_name(NB_VANNES));
-	display_horameter_hours(SCREEN_WIDTH/2, SCREEN_HEIGHT-VANNES_BOXSIZE, horameter.thermo, relays_get_name(NB_VANNES+1));
-
-	// only display names once
-	displayed_vannes_names = true;
+	display_horameter_hours(1, SCREEN_HEIGHT/2, horameter.pump, relays_get_name(PUMP_OUTPUT_N));
+	display_horameter_hours(1, 10+SCREEN_HEIGHT/2, horameter.thermo, relays_get_name(THERM_OUTPUT_N));
 
 }
 
-void display_diag() {
-	if (currentContext == DIAG1_CONTEXT)
-		display_diag1();
-	if (currentContext == DIAG2_CONTEXT)
-		display_diag2();
+// displays 8 vannes trigs
+static void display_diag3(uint16_t from, uint16_t to, uint16_t page) {
+	HORAMETER horameter;
+	horameter_get(&horameter);
 
-	display_thread_wakeup();		
+	u8g2.setFont(u8g2_font_6x10_mf);
+	char tempS[32];
+	sprintf(tempS, "Nb.Décl. vannes (1/%d)", page);
+	u8g2.drawUTF8(1, DIAG_POS_Y, tempS);
+	
+	u8g2.setFont(u8g2_font_4x6_mf);
+
+	for (int jx=0; jx < 2; jx++) {
+		for (int ix=0; ix < 4; ix++) {
+			int id=from+ix+4*jx;
+			if (id >= to)
+				break;
+			const char * name=relays_get_name(id);
+			display_horameter_actions(SCREEN_WIDTH/2*jx, DIAG_POS_Y+ix*(VANNES_BOXSIZE+1), horameter.nb[id], name );
+		}
+	}
+}
+
+
+
+void display_diag() {
+
+	erase_diag_zone();
+
+	switch (currentContext) {
+		case DIAG1_CONTEXT:
+			display_diag1();
+			break;
+		case DIAG2_CONTEXT:
+			display_diag2();
+			break;
+		case DIAG3_CONTEXT:
+			display_diag3(0, 8, 1);
+			break;
+		case DIAG4_CONTEXT:
+			display_diag3(9, NB_VANNES, 2);
+			break;
+		default:
+			break;
+	}			
+	
+	display_thread_wakeup();
+}
+
+/* Overheating alarm */
+
+static void display_alarm_context() {
+	printf("%s\n", __func__);
+	u8g2.drawXBMP((SCREEN_WIDTH-burn_width)/2, (SCREEN_HEIGHT-burn_height)/2, burn_width, burn_height, burn_bits);
 }

@@ -33,8 +33,8 @@ void setup() {
 
     relays_init();
 
-    // TODO Find out why this delay is mandatory
-//    delay(1000);
+	delay(3000);
+
     status_led_init();
 
 	rotary_button_init();
@@ -52,16 +52,9 @@ void setup() {
 	display_menu();
 	display_thread_wakeup();
 
-	// wait for led thread to be ready
-	while (true) {
-		if (status_led_thread_ready())
-			break;
-		delay(100);
-	}
-
 	status_led_blink(true);
 
-	printf("Init complete\n");
+	printf("------- Init complete ---------\n");
 
 }
 

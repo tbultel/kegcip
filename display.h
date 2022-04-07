@@ -17,9 +17,13 @@ typedef enum {
 	MAIN_MENU_CONTEXT,
 	DIAG1_CONTEXT,
 	DIAG2_CONTEXT,
+	DIAG3_CONTEXT,
+	DIAG4_CONTEXT,
+	ALARM_CONTEXT,
 	LAST_CONTEXT
 } DISPLAY_CONTEXT;
 
-extern void display_swap_context();
+extern void display_roll_context();
+extern void display_set_context(DISPLAY_CONTEXT context);
 
 extern void display_diag();
