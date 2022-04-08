@@ -13,11 +13,14 @@
 #include "levels.h"
 #include "horameter.h"
 #include "diag.h"
+#include "emergency_button_stop.h"
 
 void setup() {
     Serial.begin(115200);
 
   	printf("Started !\n");
+
+	emergency_button_stop_init();
 
 	display_init();
 
@@ -52,7 +55,7 @@ void setup() {
 	display_menu();
 	display_thread_wakeup();
 
-	status_led_blink(true);
+	emergency_button_check();
 
 	printf("------- Init complete ---------\n");
 
@@ -70,10 +73,13 @@ static uint32_t cycleCpt = 0;
 void loop() {
 	rotary_tick();
 	start_button_tick();
+	emergency_button_tick();
 	
 	if (cycleCpt % TEMP_DISPLAY_MODULO == 0) {
-		display_temperature();
-		display_levels();
+		if (display_get_context() != EMERGENCY_CONTEXT) {
+			display_temperature();
+			display_levels();
+		}
 	}
 
 	if (cycleCpt % HEARTBEAT_DISPLAY_MODULO == 0) {

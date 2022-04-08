@@ -31,8 +31,6 @@ typedef struct {
 
 extern void cycles_init();
 
-extern bool cycle_start(CYCLE_ID cycle);
-
 typedef void (*cyclesCallback)(const char *stateName, uint32_t seconds, uint32_t totalSeconds);
 
 extern void cycles_set_callback(cyclesCallback cb);
@@ -40,3 +38,5 @@ extern void cycles_set_callback(cyclesCallback cb);
 extern const char* cycles_get_name(CYCLE_ID);
 
 extern void cycle_stop();
+extern void cycle_resume();
+extern void cycle_suspend();

@@ -40,7 +40,9 @@ U8G2_SSD1309_128X64_NONAME2_F_4W_HW_SPI u8g2(
   PIN_LCD_RST);  
 #endif
 
+static void display_emergency_context();
 static void display_alarm_context();
+
 static void display_swap_context();
 
 void display_temperature() {
@@ -295,7 +297,7 @@ void display_heartbeat() {
 
 void display_heating(bool heat) {
 	
-	uint8_t posx = SCREEN_WIDTH/2+heating_width;
+	uint8_t posx = SCREEN_WIDTH/2+heating_width*3;
 	uint8_t posy = 1;
 
 	u8g2.setBitmapMode(false /* solid */);
@@ -331,6 +333,10 @@ void display_set_context(DISPLAY_CONTEXT context) {
 	display_swap_context();
 }
 
+extern DISPLAY_CONTEXT display_get_context() {
+	return currentContext;
+}
+
 static void display_swap_context() {
 
 	if (!initialized)
@@ -356,8 +362,13 @@ static void display_swap_context() {
 			display_alarm_context();
 			display_thread_wakeup();
 			break;
+		case EMERGENCY_CONTEXT:
+			display_clear_screen();
+			display_emergency_context();
+			display_thread_wakeup();
+			break;
 		default: 
-		break;
+			break;
 	}
 }
 
@@ -509,6 +520,10 @@ void display_diag() {
 /* Overheating alarm */
 
 static void display_alarm_context() {
-	printf("%s\n", __func__);
 	u8g2.drawXBMP((SCREEN_WIDTH-burn_width)/2, (SCREEN_HEIGHT-burn_height)/2, burn_width, burn_height, burn_bits);
+}
+
+/* emergency stop */
+static void display_emergency_context() {
+	u8g2.drawXBMP((SCREEN_WIDTH-deathhead_width)/2, (SCREEN_HEIGHT-deathhead_height)/2, deathhead_width, deathhead_height, deathhead_bits);
 }

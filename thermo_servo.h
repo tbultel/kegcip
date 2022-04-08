@@ -16,7 +16,6 @@
 
 extern void thermo_servo_init();
 
-extern void thermo_servo_set_target_setpoint(float setpoint);
 extern float thermo_servo_get_setpoint(void);
 
 extern void thermo_on(void);

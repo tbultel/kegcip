@@ -37,7 +37,7 @@ void start_button_tick() {
 	startButton.update();
 	if (startButton.rose()) {
 		printf("Start !\n");
-		cycle_start(main_menu_getid());
+		cycle_resume();
 	}
 }
 

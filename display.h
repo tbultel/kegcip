@@ -12,6 +12,7 @@ extern void display_temperature();
 extern void display_heartbeat();
 
 extern void display_heating(bool heat);
+extern void display_diag();
 
 typedef enum {
 	MAIN_MENU_CONTEXT,
@@ -20,10 +21,12 @@ typedef enum {
 	DIAG3_CONTEXT,
 	DIAG4_CONTEXT,
 	ALARM_CONTEXT,
+	EMERGENCY_CONTEXT,
 	LAST_CONTEXT
 } DISPLAY_CONTEXT;
 
 extern void display_roll_context();
 extern void display_set_context(DISPLAY_CONTEXT context);
+extern DISPLAY_CONTEXT display_get_context();
 
-extern void display_diag();
+

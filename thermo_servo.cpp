@@ -13,7 +13,7 @@
 #include "rotary_button.h"
 
 static float thermo_setpoint = 0.0;
-static float thermo_target_setpoint = 0.0;
+static float thermo_target_setpoint = THERMO_SERVO_TEMP_DEFAULT;
 
 static int thermoServoThreadId = -1;
 static bool thermo_is_on = false;
@@ -62,9 +62,7 @@ static void thermo_servo_thread() {
 		// check the heating timeout 
 		if (heating && alarm_countdown < 0) {
 			cycle_stop();
-			relays_set(RELAYS_OFF);
-
-			thermo_servo_set_setpoint(0.0);
+			logical_output_set(RELAYS_OFF);
 			main_menu_disable();
 			start_button_disable();
 			rotary_button_disable();

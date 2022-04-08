@@ -4,8 +4,6 @@
 #include "status_led.h"
 #include "pinout.h"
 
-#define DEFAULT_LED_PERIOD_MS 300
-
 static bool ledState = false;
 static int ledThreadId = -1;
 static bool initialized = false;

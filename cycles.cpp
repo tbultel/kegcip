@@ -104,14 +104,17 @@ static int cycleThreadId = -1;
 static bool initialized = false;
 static cyclesCallback cycles_callback = NULL;
 static bool ready = false;
+static bool suspended = false;
 
 static void cycle_thread() {
 	int myId = threads.id();
 
 	ready = true;
+
 	printf("Cycle Thread started (id %d)\n", myId);
 
 	while (true) {
+		status_led_blink(true);
 	    threads.suspend(myId);
     	threads.yield();
 
@@ -185,7 +188,6 @@ static void cycle_thread() {
 		printf("%s: ended cycle %s\n", __func__, currentCycle->name);
 		horameter_save();
 
-		status_led_blink(true);
 		main_menu_enable();
 		start_button_enable();
 
@@ -251,4 +253,44 @@ const char* cycles_get_name(CYCLE_ID id) {
 void cycle_stop() {
 	printf("Killing cycle thread\n");
 	threads.kill(cycleThreadId);
+}
+
+void cycle_suspend() {
+	suspended = true;
+
+ 	if (currentCycle != NULL) {
+		// will blink faster at restart time
+		status_led_set_period(RESTART_LED_PERIOD_MS);
+	} else {
+		status_led_blink(false);
+		status_led_set_state(true);
+	}
+
+	threads.suspend(cycleThreadId);
+}
+
+void cycle_resume() {
+
+	status_led_set_period(DEFAULT_LED_PERIOD_MS);
+
+	if (currentCycle == NULL) {
+		suspended = false;
+		cycle_start(main_menu_getid());
+		return;
+	}
+
+	if (suspended) {
+		CYCLE_STATE* state = currentCycle->currentState;
+
+		if (state != NULL) {
+			printf("Resuming cycle %s to state %s\n", currentCycle->name, state->name);
+			logical_output_set(state->relays);
+
+			status_led_blink(false);
+			status_led_set_state(true);
+		}
+	}
+
+	threads.restart(cycleThreadId);
+	suspended = false;
 }
