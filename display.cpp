@@ -122,6 +122,8 @@ void display_menu() {
 
 	const char* menu = main_menu_name();
 
+	printf("Current menu: %s\n", menu);
+
     u8g2.setFont(u8g2_font_6x10_mf);
 	uint32_t width = u8g2.getUTF8Width(menu);
 
@@ -261,6 +263,7 @@ void display_clear_screen() {
 
 
 void display_welcome() {
+	
 	if (!initialized)
 		return;
 

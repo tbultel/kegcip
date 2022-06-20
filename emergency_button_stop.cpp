@@ -61,7 +61,7 @@ static void emergency_enter() {
 }
 static void emergency_exit() {
 	main_menu_enable();
-	start_button_enable();
+	start_button_register_callback(cycle_resume);
 	rotary_button_enable();
 	status_led_blink(true);
 

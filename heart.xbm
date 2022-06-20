@@ -1,0 +1,4 @@
+#define heart_width 4
+#define heart_height 4
+static unsigned char heart_bits[] = {
+   0x0f, 0x0f, 0x0f, 0x0f };

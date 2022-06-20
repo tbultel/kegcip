@@ -11,7 +11,6 @@ static bool ready = false;
 
 static uint32_t led_period_ms = DEFAULT_LED_PERIOD_MS;
 
-
 static void set_status_led(bool state) {
 	digitalWrite(PIN_BUTTON_LED, state?HIGH:LOW);    
 }
@@ -50,7 +49,7 @@ static void led_thread() {
     	set_status_led(ledState);
 
     	threads.delay(led_period_ms);
-  }
+	}
 }
 
 void status_led_init() {
@@ -66,3 +65,4 @@ void status_led_init() {
 
 	initialized = true;
 }
+

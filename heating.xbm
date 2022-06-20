@@ -1,0 +1,4 @@
+#define heating_width 8
+#define heating_height 8
+static unsigned char heating_bits[] = {
+   0x18, 0x6e, 0x46, 0xc3, 0xdb, 0x5a, 0x7e, 0x18 };

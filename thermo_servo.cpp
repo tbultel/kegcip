@@ -67,7 +67,7 @@ static void thermo_servo_thread() {
 			start_button_disable();
 			rotary_button_disable();
 			display_set_context(ALARM_CONTEXT);
-			printf("ERROR temperature runwaway !\n");
+			printf("ERROR: temperature runwaway !\n");
 		}
 
 		if (heating) {

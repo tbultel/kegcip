@@ -8,7 +8,7 @@
 
 
 // start menu
-static CYCLE_ID currentMenu = RINCAGE;
+static CYCLE_ID currentMenu = (CYCLE_ID) 0;
 static bool main_menu_enabled = true;
 static bool initialized = false;
 
@@ -28,7 +28,9 @@ static void setNextMenu() {
 		return;
 	int menu = currentMenu;
 	menu++;
-	menu %= CYCLE_LAST;
+
+	if (menu >= CYCLE_LAST)
+		menu = 0;
 
 	currentMenu = (CYCLE_ID) menu;
 	display_menu();
@@ -46,6 +48,7 @@ static void setPrevMenu() {
 	menu--;
 	if (menu < 0 )
 		menu = CYCLE_LAST-1;
+
 	currentMenu = (CYCLE_ID) menu;
 	display_menu();
 	display_thread_wakeup();
