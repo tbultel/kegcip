@@ -5,6 +5,7 @@
 
 #include "thread.h"
 #include "relays.h"
+#include "pinout.h"
 
 #define IO_BOARD_ADDR 0x27
 
@@ -44,8 +45,8 @@ void relays_init() {
 	printf("Initializing relays\n");
 
     // I2C Relay board setup
-    Wire.setSDA(18);
-    Wire.setSCL(19);
+    Wire.setSDA(PIN_RELAYS_SDA);
+    Wire.setSCL(PIN_RELAYS_SCL);
   
     Wire.begin();                // wake up I2C bus
     // set I/O pins to outputs

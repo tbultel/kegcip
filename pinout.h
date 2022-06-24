@@ -1,5 +1,9 @@
 #pragma once
 
+// kegcip needs 14 GPIOS and 3 HW spi pins
+// (think about when wanting to replace the µC !)
+
+#define PIN_ONE_WIRE_BUS	0
 
 #define PIN_BUTTON_LED		1
 #define PIN_MENUCLICK		2
@@ -18,4 +22,5 @@
 #define PIN_MENUSELECT_1	14
 #define PIN_MENUSELECT_2	15
 
-#define PIN_ONE_WIRE_BUS	0
+#define PIN_RELAYS_SDA		18
+#define PIN_RELAYS_SCL		19
