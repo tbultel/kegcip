@@ -27,7 +27,7 @@ static void thermo_servo_set_target_setpoint(float target_setpoint);
 
 static void thermo_servo_thread() {
 	ready = true;
-	printf("Thrermo thread ready\n");
+	printf("Thermo thread ready\n");
 
 	bool heating = false;
 
