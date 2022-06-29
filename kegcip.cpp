@@ -28,13 +28,13 @@ void setup() {
 
 	display_welcome();
 
-	horameter_init();
-
 	temperature_init();
 
 	levels_init();
 
     relays_init();
+
+	horameter_init();
 
 	delay(1000);
 
