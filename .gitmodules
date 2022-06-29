@@ -1,3 +1,9 @@
 [submodule "Arduino-Makefile"]
 	path = Arduino-Makefile
 	url = git@github.com:tbultel/Arduino-Makefile.git
+[submodule "hard/teensy.pretty"]
+	path = hard/teensy.pretty
+	url = https://github.com/XenGi/teensy.pretty.git
+[submodule "hard/teensy_library"]
+	path = hard/teensy_library
+	url = https://github.com/XenGi/teensy_library.git
