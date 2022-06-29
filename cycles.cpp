@@ -11,17 +11,17 @@
 #include "levels.h"
 #include "start_button.h"
 #include "thermo_servo.h"
+#include "temperature.h"
 
 #define DEBUG
 
-// HACK
-bool temp_is_80() {
-	return true;
+
+static bool temp_is_80() {
+	return temperature_get() >= 80.0;
 }
 
-
-bool ack_transfer() {
-	return true;
+static bool ack_transfer() {
+	return start_pressed();
 }
 
 
@@ -29,14 +29,14 @@ bool ack_transfer() {
 
 CYCLE_STATE Desinfection_fermenteur[] = {
 	{"Démarrage desinfection fermenteur", 	RELAYS_OFF, 		5,	 NULL, NULL},
-	{"Ammorçage acide", 					EV3 | EV5 | EV6 , 	30,	 NULL, NULL},
+	{"Amorçage acide", 					EV3 | EV5 | EV6 , 	30,	 NULL, NULL},
 	{"Transfert acide", EV3 | EV5 | EV6 | PUMP, ONE_MINUTE, acid_low, NULL },
 	{"Fin de transfert acide", RELAYS_OFF, 5, NULL, NULL},
 	{"Cycle acide principal", EV4 | EV5 | EV6 | PUMP, 10*ONE_MINUTE, NULL, NULL},
 	{"Cycle acide filtre", EV4 | EV5p | EV5pp |	EV6	| PUMP, 5*ONE_MINUTE,	NULL, NULL},
 	{"Vidange acide", EV4 | EV5 | EV9 | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin de vidange acide", RELAYS_OFF, 5, NULL, NULL},
-	{"Ammorçage eau", EV2 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage eau", EV2 | EV5 | EV6 , 30, NULL, NULL},
 	{"Transfert eau", EV2 | EV5 | EV6 | PUMP, ONE_MINUTE, water_low, NULL},
 	{"Fin de transfert eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Rinçage principal", EV4 | EV5 | EV6 | PUMP, 5*ONE_MINUTE, NULL, NULL},
@@ -49,7 +49,7 @@ CYCLE_STATE Desinfection_fermenteur[] = {
 
 CYCLE_STATE Whirlpool[] = {
 	{"Démarrage Whirlpool", RELAYS_OFF, 5, NULL, NULL},
-	{"Ammorçage Whirlpool", EV4 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage Whirlpool", EV4 | EV5 | EV6 , 30, NULL, NULL},
 	{"Whirlpool", EV4 | EV5 | EV6 | PUMP, 10*ONE_MINUTE, NULL,	NULL},
 	{"Whirlpool terminé", RELAYS_OFF, 5, NULL, NULL},
 	{ NULL, RELAYS_OFF, 0, NULL, NULL},	
@@ -57,7 +57,7 @@ CYCLE_STATE Whirlpool[] = {
 
 CYCLE_STATE Transfert[] = {
 	{"Démarrage Transfert", RELAYS_OFF, 5, NULL, NULL},
-	{"Ammorçage Transfert", EV4 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage Transfert", EV4 | EV5 | EV6 , 30, NULL, NULL},
 	{"Transfert", EV4 | EV5p | EV5pp | EV6 | PUMP, 1, ack_transfer,	NULL},
 	{"Transfert terminé", RELAYS_OFF, 5, NULL, NULL},
 	{ NULL, RELAYS_OFF, 0, NULL, NULL},
@@ -66,14 +66,14 @@ CYCLE_STATE Transfert[] = {
 CYCLE_STATE Lavage_Whirlpool[] = {
 	{"Démarrage lavage whirlpool", RELAYS_OFF, 5, NULL, NULL},
 	{"Préchauffage soude", THERM, 1, temp_is_80, NULL},
-	{"Ammorçage soude", EV1 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage soude", EV1 | EV5 | EV6 , 30, NULL, NULL},
 	{"Transfert soude", EV1 | EV5 | EV6 | PUMP, ONE_MINUTE, soda_low, NULL},
 	{"Fin de transfert soude", RELAYS_OFF, 5, NULL, NULL},
 	{"Cycle soude principal", EV4 | EV5 | EV6 | PUMP, 10*ONE_MINUTE, NULL,	NULL},
 	{"Cycle soude filtre", EV4 | EV5p | EV5pp |	EV6	| PUMP, 5*ONE_MINUTE,	NULL, NULL},
 	{"Vidange soude", EV4 | EV5 | EV7 | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin de vidange soude", RELAYS_OFF, 5, NULL, NULL},
-	{"Ammorçage eau", EV2 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage eau", EV2 | EV5 | EV6 , 30, NULL, NULL},
 	{"Transfert eau", EV2 | EV5 | EV6 | PUMP, ONE_MINUTE, water_low, NULL },
 	{"Fin de transfert eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Rinçage principal", EV4 | EV5 | EV6 | PUMP, 5*ONE_MINUTE, NULL, NULL},
@@ -87,7 +87,7 @@ CYCLE_STATE Lavage_Whirlpool[] = {
 CYCLE_STATE Lavage_fermenteur[] = {
 	{"Démarrage lavage fermenteur", RELAYS_OFF, 5, NULL, NULL},
 	{"Préchauffage soude", THERM, 1, temp_is_80, NULL},
-	{"Ammorçage soude", EV1 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage soude", EV1 | EV5 | EV6 , 30, NULL, NULL},
 	{"Transfert soude", EV1 | EV5 | EV6 | PUMP, ONE_MINUTE, soda_low, NULL},
 	{"Fin de transfert soude", RELAYS_OFF, 5, NULL, NULL},
 	{"Cycle soude", EV4 | EV5 | EV6 | PUMP, 15*ONE_MINUTE, NULL,	NULL},
@@ -107,28 +107,28 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	{"Démarrage cycle complet fûts", RELAYS_OFF, 5, NULL, NULL},
 	{"Préchauffage soude", THERM, 1, temp_is_80, NULL},
 	{"Purge air", EV4 | EV5 | EV8 | EV10, 30, NULL, NULL},
-	{"Ammorçage soude", EV1 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage soude", EV1 | EV5 | EV6 , 30, NULL, NULL},
 	{"Transfert soude", EV1 | EV5 | EV6 | PUMP, ONE_MINUTE, soda_low, NULL},
 	{"Fin de transfert soude", RELAYS_OFF, 5, NULL, NULL},
 	{"Cycle soude ", EV4 | EV5 | EV6 | PUMP, 2*ONE_MINUTE, NULL,	NULL},
 	{"Vidange soude", EV4 | EV5 | EV7 | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin de vidange soude", RELAYS_OFF, 5, NULL, NULL},
 	{"Purge air", EV4 | EV5 | EV8 | EV10, 30, NULL, NULL},	
-	{"Ammorçage eau", EV2 | EV5 | EV6 , 30, NULL,	NULL},
+	{"Amorçage eau", EV2 | EV5 | EV6 , 30, NULL,	NULL},
 	{"Transfert eau", EV2 | EV5 | EV6 | PUMP, ONE_MINUTE, water_low, NULL},
 	{"Fin de transfert eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Rinçage", EV4 | EV5 | EV6 | PUMP, 5*ONE_MINUTE, NULL, NULL},
 	{"Vidange eau", EV4 | EV5 | EV8 | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin de vidange eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Purge air", EV4 | EV5 | EV8 | EV10, 30, NULL, NULL},
-	{"Ammorçage acide", EV3 | EV5 | EV6 , 30, NULL, NULL},
+	{"Amorçage acide", EV3 | EV5 | EV6 , 30, NULL, NULL},
 	{"Transfert acide", EV3 | EV5 | EV6 | PUMP, ONE_MINUTE, acid_low, NULL},
 	{"Fin de transfert acide", RELAYS_OFF, 5, NULL, NULL},
 	{"Cycle acide", EV4 | EV5 | EV6 | PUMP, 2*ONE_MINUTE, NULL,	NULL},
 	{"Vidange acide", EV4 | EV5 | EV9 | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin de vidange acide", RELAYS_OFF, 5, NULL, NULL},	
 	{"Purge air", EV4 | EV5 | EV8 | EV10, 30, NULL, NULL},
-	{"Ammorçage eau", EV2 | EV5 | EV6 , 30, NULL,	NULL},
+	{"Amorçage eau", EV2 | EV5 | EV6 , 30, NULL,	NULL},
 	{"Transfert eau", EV2 | EV5 | EV6 | PUMP, ONE_MINUTE, water_low, NULL},
 	{"Fin de transfert eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Rinçage", EV4 | EV5 | EV6 | PUMP, 5*ONE_MINUTE, NULL, NULL},

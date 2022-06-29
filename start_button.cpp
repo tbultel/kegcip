@@ -22,7 +22,7 @@ void start_button_init() {
 
 	printf("Initializing start button\n");
 
-	startButton.attach(PIN_START_BUTTON, INPUT_PULLDOWN);
+	startButton.attach(PIN_START_BUTTON, INPUT_PULLUP);
 	startButton.interval(START_BUTTON_DEBOUNCE_MS);
 
 	enabled = true;
@@ -38,7 +38,7 @@ void start_button_tick() {
 		return;
 
 	startButton.update();
-	if (startButton.rose()) {
+	if (startButton.fell()) {
 		printf("Start !\n");
 		if (startCallback)
 			startCallback();
