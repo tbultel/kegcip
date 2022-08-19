@@ -10,7 +10,7 @@
 
 Bounce startButton = Bounce();
 
-#define START_BUTTON_DEBOUNCE_MS	10
+#define START_BUTTON_DEBOUNCE_MS	20
 
 static bool initialized = false;
 static bool enabled = true;

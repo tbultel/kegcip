@@ -236,7 +236,7 @@ void display_init() {
 	if (initialized)
 		return;
 
-	printf("Initializing display\n");
+	printf("** Initializing display\n");
 
     u8g2.begin();
 	u8g2.enableUTF8Print();
@@ -337,7 +337,7 @@ void display_set_context(DISPLAY_CONTEXT context) {
 }
 
 extern DISPLAY_CONTEXT display_get_context() {
-	return currentContext;
+	return (DISPLAY_CONTEXT) currentContext;
 }
 
 static void display_swap_context() {

@@ -57,7 +57,7 @@ void status_led_init() {
 	if (initialized)
 		return;
 
-	printf("Initializing led\n");    
+	printf("** Initializing status led\n");
     pinMode(PIN_BUTTON_LED, OUTPUT);
 
 	ledThreadId = threads.addThread(led_thread, 0);

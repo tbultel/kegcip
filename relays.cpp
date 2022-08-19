@@ -1,7 +1,14 @@
 
+#ifdef I2C_STATIC_RELAYS_BOARD
 
 #include <Wire.h>
 #include <SPI.h>
+
+#else
+
+#include <Adafruit_MCP23X17.h>
+
+#endif
 
 #include "thread.h"
 #include "relays.h"
@@ -13,20 +20,31 @@ static void relay_thread();
 static int relayThreadId = -1;
 static bool ready = false;
 
+#define EV1A	(1<<0)
+#define EV2A	(1<<1)
+#define EV3A	(1<<2)
+#define EV4		(1<<3)
+#define EV5		(1<<4)
+#define EV6 	(1<<5)
+#define EV7 	(1<<6)
+#define EV1B	(1<<7)
+#define EV2B	(1<<8)
+#define EV3B	(1<<9)
+#define PUMP	(1<<10)
+#define THERM	(1<<11)
+#define BUZ		(1<<12)
+
 static const char* relays_name[16]= {
-	"EV1",
-	"EV2",
-	"EV3",
+	"EV1A",
+	"EV2A",
+	"EV3A",
 	"EV4",
 	"EV5",
-	"EV5p",
-	"EV5pp",	
 	"EV6",
 	"EV7",
-	"EV8",
-	"EV9",
-	"EV10",
-	"EV11",
+	"EV1B",
+	"EV2B",
+	"EV3B",
 	"PUMP",
 	"THERM",
 	"BUZ"
@@ -37,13 +55,8 @@ static uint16_t relays_state = 0x0000;
 static relay_callback relay_change_callback = NULL;
 static bool initialized = false;
 
-void relays_init() {
-
-	if (initialized)
-		return;
-
-	printf("Initializing relays\n");
-
+#ifdef I2C_STATIC_RELAYS_BOARD
+static void relays_static_init() {
     // I2C Relay board setup
     Wire.setSDA(PIN_RELAYS_SDA);
     Wire.setSCL(PIN_RELAYS_SCL);
@@ -59,6 +72,44 @@ void relays_init() {
     Wire.write((byte)0x01);      // B register
     Wire.write((byte)0x00);      // set all of port B to outputs
     Wire.endTransmission();  
+}
+
+#else
+
+Adafruit_MCP23X17 mcp;
+
+static void	relays_MCP23017_init() {
+
+	printf("%s...\n", __func__);
+
+	if (!mcp.begin_I2C(IO_BOARD_ADDR, &Wire)) {
+		printf("Error, cannot find relays board\n");
+		while (1);
+	}
+
+	printf("Relays board initialized\n");
+
+	for (int ix=0; ix<16; ix++) {
+		mcp.pinMode(ix, OUTPUT);
+		mcp.digitalWrite(ix, HIGH);
+	}
+}
+#endif
+
+void relays_init() {
+
+	if (initialized)
+		return;
+
+	printf("** Initializing relays\n");
+
+    // I2C Relay board setup
+
+#ifdef I2C_STATIC_RELAYS_BOARD
+	relays_static_init();
+#else
+	relays_MCP23017_init();
+#endif
 
     relayThreadId   = threads.addThread(relay_thread, 0);
 	while (!ready) { delay(100); }
@@ -67,8 +118,10 @@ void relays_init() {
 
 }
 
-static void do_set_relays(uint16_t relays) {
 
+
+#ifdef I2C_STATIC_RELAYS_BOARD
+static void do_set_relays_static(uint16_t relays) {
 	uint8_t variable_LOW = lowByte(relays);
  	uint8_t variable_HIGH = highByte(relays);
 
@@ -81,6 +134,30 @@ static void do_set_relays(uint16_t relays) {
 	Wire.write(0x13);            // address bank B
 	Wire.write(variable_HIGH);
 	Wire.endTransmission();
+}
+#else
+static void do_set_relays_MCP23017(uint16_t relays) {
+
+	for (int ix=0; ix<16;ix++) {
+		if ((relays & (1<<ix)) == (1<<ix)) {
+			printf("%d low\n", ix);
+			mcp.digitalWrite(ix, LOW);
+		}
+		else {
+			printf("%d high\n", ix);
+			mcp.digitalWrite(ix, HIGH);
+		}
+	}
+}
+#endif
+
+static void do_set_relays(uint16_t relays) {
+#ifdef I2C_STATIC_RELAYS_BOARD
+	do_set_relays_static(relays);
+#else
+	do_set_relays_MCP23017(relays);
+#endif
+
 }
 
 static void relay_thread() {

@@ -25,7 +25,7 @@ void emergency_button_stop_init() {
 	if (initialized)
 		return;
 
-	printf("Initializing emergency stop\n");
+	printf("** Initializing emergency stop\n");
 
 	emergencyButton.attach(PIN_EMERGENCY_STOP, INPUT_PULLUP);
 	emergencyButton.interval(EMERGENCY_BUTTON_DEBOUNCE_MS);

@@ -65,7 +65,7 @@ void main_menu_init() {
 	if (initialized)
 		return;
 
-	printf("Initializing main menu\n");
+	printf("** Initializing main menu\n");
 
 	rotary_register_callbacks(setNextMenu, setPrevMenu, onClick);
 	initialized = true;

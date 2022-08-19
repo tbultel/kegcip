@@ -1,6 +1,7 @@
 # Yes, TEENSY32 uses teensy31 description in boards.txt
 
 BOARD_TAG    = teensy40
+#BOARD_TAG    = teensy31
 
 ARDUINO_LIBS = U8g2
 ARDUINO_LIBS += Wire 
@@ -12,7 +13,10 @@ ARDUINO_LIBS += TeensyThreads
 ARDUINO_LIBS += Bounce2
 ARDUINO_LIBS += EEPROM
 
-# the boards.txt is buggy and contains unsupported frequencies for TEENSY32.
+ARDUINO_LIBS += Adafruit_MCP23017_Arduino_Library
+ARDUINO_LIBS += Adafruit_BusIO
+
+# the boards.txt is buggy and contains unsupported frequencies for TEENSY32 / TEENSY31.
 # So we force it here
 ifeq ($(BOARD_TAG),teensy31)
 F_CPU:=120000000
@@ -22,7 +26,6 @@ F_CPU:=600000000
 endif
 endif
 
-#ARDMK_DIR=/home/thierry/Projects/KegCip/kegcip/Arduino-Makefile
 ARDMK_DIR=./Arduino-Makefile
 ARDUINO_DIR=../arduino-1.8.19
 

@@ -5,14 +5,8 @@
 #define THERMO_SERVO_TEMP_DEFAULT	80
 #define THERMO_SERVO_TEMP_ENZYME	50
 
-// Security: timeout, in seconds, for the temperature to raise
-// If the thermo is ON, and the temperature does reach the setpoint.
-// That probably means that either the thermo does not work,
-// which would be bad, or that the temperature sensor is broken,
-// which would be worse
-
-// TODO check the appropriate value
-#define THERMO_SERVO_RUNAWAY_DELAY_SEC	60
+// max number of seconds to rise the temp of 1 deg C
+#define THERMO_SERVO_1_DEG_TIME_SECS	120
 
 extern void thermo_servo_init();
 

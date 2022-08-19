@@ -40,7 +40,7 @@ void horameter_init() {
 	if (initialized)
 		return;
 
-	printf("Reading horameters ...\n");
+	printf("** Initializing horameters\n");
 
 	horameter_read();
 
@@ -101,7 +101,7 @@ static void horameter_relay_callback(uint16_t relays) {
 	static uint32_t therm_start = 0;
 	static bool pump_on = false;
 	static bool therm_on = false;
-	static bool vanne_on[NB_VANNES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	static bool vanne_on[NB_VANNES] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	uint32_t current = millis();
 

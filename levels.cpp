@@ -5,7 +5,7 @@
 
 
 void levels_init()  {
-	printf("Initializing levels\n");
+	printf("** Initializing levels\n");
 	static bool initialized = false;
 	if (initialized)
 		return;

@@ -30,37 +30,62 @@ static void thermo_servo_thread() {
 	printf("Thermo thread ready\n");
 
 	bool heating = false;
+	bool alarm = false;
 
-	int32_t alarm_countdown = THERMO_SERVO_RUNAWAY_DELAY_SEC;
+	float old_temp = 0.0;
+	uint32_t oldtimeSecs = 0;
 
 	while (true) {
 		float temp = temperature_get();
 
-#ifdef DEBUG
 		char tempS[8], setpointS[8];
-    	dtostrf(temp, 4, 2, tempS);
+		dtostrf(temp, 4, 2, tempS);
 		dtostrf(thermo_setpoint, 4, 2, setpointS);
+#if DEBUG
 		printf("%s: temp %s/%s\n", __func__, tempS, setpointS);
 #endif		
 
 		if (thermo_is_on && temp < thermo_setpoint) {
 			if (!heating) {
 				printf("%s: heating ...\n", __func__);
+				old_temp=temperature_get();
+				oldtimeSecs=millis()/1000;
 			}
 
 			heating = true;
-			alarm_countdown--;
+
 		}
 		else {
 			if (heating)
 				printf("%s: stopped heating ...\n", __func__);
 
 			heating = false;
-			alarm_countdown = THERMO_SERVO_RUNAWAY_DELAY_SEC;
+		}
+
+		/* check the temperature delta */
+		if (heating) {
+			uint32_t elapsedSecs = millis()/1000;
+
+			printf("thermal countdown: %d\n", THERMO_SERVO_1_DEG_TIME_SECS - (elapsedSecs - oldtimeSecs));
+
+			// Check the temperature change each THERMO_SERVO_1_DEG_TIME_SECS interval, expect it to rise of at least 1 deg C
+			if (elapsedSecs - oldtimeSecs >= THERMO_SERVO_1_DEG_TIME_SECS) {
+				oldtimeSecs = elapsedSecs;
+
+				char old_tempS[8];
+				dtostrf(old_temp, 4, 2, old_tempS);
+
+				printf("Check temp rising (old %s (%d), current %s (%d))\n", old_tempS, (int)old_temp, tempS, (int)temp);
+
+				if (temp-old_temp < 1.0) {
+					alarm = true;
+				}
+				old_temp = temp;
+			}
 		}
 
 		// check the heating timeout 
-		if (heating && alarm_countdown < 0) {
+		if (alarm) {
 			cycle_stop();
 			logical_output_set(RELAYS_OFF);
 			main_menu_disable();
@@ -87,7 +112,7 @@ void thermo_servo_init() {
 	if (initialized)
 		return;
 
-	printf("Initializing thermo\n");
+	printf("** Initializing thermo servo thread\n");
 	thermoServoThreadId = threads.addThread(thermo_servo_thread, 0);
 	while (!ready) { delay(100); }
 }

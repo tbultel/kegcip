@@ -25,7 +25,7 @@ void rotary_button_init() {
 	if (initialized)
 		return;
 
-	printf("Initializing rotary\n");
+	printf("** Initializing rotary button\n");
 
     pinMode(PIN_MENUCLICK, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(PIN_MENUCLICK), rotaryClickIsr, FALLING);

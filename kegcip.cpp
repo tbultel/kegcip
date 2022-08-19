@@ -36,8 +36,6 @@ void setup() {
 
 	horameter_init();
 
-	delay(1000);
-
     status_led_init();
 
 	rotary_button_init();
@@ -53,11 +51,12 @@ void setup() {
 	display_clear_screen();
 
 	display_menu();
+
 	display_thread_wakeup();
 
 	emergency_button_check();
 
-	printf("------- Init complete ---------\n");
+	printf("------- Init complete , KEGCIP READY ! ---------\n");
 
 }
 

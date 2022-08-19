@@ -38,7 +38,7 @@ void diag_init() {
 	if (initialized)
 		return;
 	
-	printf("Initializing diag.\n");
+	printf("** Initializing diag.\n");
 		
 	diagThreadId = threads.addThread(diag_thread, 0);
 	while (!ready) { delay(100); }
