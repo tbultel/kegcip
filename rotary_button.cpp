@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <RotaryEncoder.h>
+#include <Bounce2.h>
 
 #include "pinout.h"
 #include "rotary_button.h"
-
 
 RotaryEncoder menuselect(PIN_MENUSELECT_1, PIN_MENUSELECT_2);
 
@@ -13,13 +13,9 @@ static rotaryCallback clickCallback = NULL;
 static bool initialized = false;
 static bool enabled = true;
 
-static void rotaryClickIsr() {
-	if (!enabled)
-		return;
+Bounce rotaryClickButton = Bounce();
+#define MENUCLICK_BUTTON_DEBOUNCE_MS 20
 
-	if (clickCallback)
-		clickCallback();
-}
 
 void rotary_button_init() {
 	if (initialized)
@@ -27,8 +23,8 @@ void rotary_button_init() {
 
 	printf("** Initializing rotary button\n");
 
-    pinMode(PIN_MENUCLICK, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(PIN_MENUCLICK), rotaryClickIsr, FALLING);
+	rotaryClickButton.attach(PIN_MENUCLICK, INPUT_PULLUP);
+	rotaryClickButton.interval(MENUCLICK_BUTTON_DEBOUNCE_MS);
 
 	initialized = true;
 }
@@ -55,6 +51,14 @@ void rotary_tick() {
 
 	if (motion < 0 && backwardCallback)
 		backwardCallback();
+
+
+	rotaryClickButton.update();
+	if (rotaryClickButton.fell()) {
+		printf("Rotary Click !\n");
+		if (clickCallback)
+			clickCallback();
+	}
 }
 
 void rotary_register_callbacks(
