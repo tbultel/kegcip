@@ -87,6 +87,9 @@ static void	relays_MCP23017_init() {
 		while (1);
 	}
 
+	pinMode(PIN_RELAYS_SDA, INPUT_PULLUP);
+	pinMode(PIN_RELAYS_SCL, INPUT_PULLUP);
+
 	printf("Relays board initialized\n");
 
 	for (int ix=0; ix<16; ix++) {
