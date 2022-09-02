@@ -141,7 +141,7 @@ CYCLE_STATE cycle_test_enzymes[] = {
 
 CYCLE_STATE cycle_test_thermo[] = {
 	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
-	{ "Temp Thermo 80",			THERM,						300, NULL, temp_is_80 },
+	{ "Temp Thermo 80",			THERM,						1200, NULL, temp_is_80 },
 	{ "Cooling",				RELAYS_OFF,					10, NULL, NULL },
 	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
 };

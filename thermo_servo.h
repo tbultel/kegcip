@@ -6,7 +6,7 @@
 #define THERMO_SERVO_TEMP_ENZYME	50
 
 // max number of seconds to rise the temp of 1 deg C
-#define THERMO_SERVO_1_DEG_TIME_SECS	120
+#define THERMO_SERVO_1_DEG_TIME_SECS	240
 
 extern void thermo_servo_init();
 
