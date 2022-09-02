@@ -139,6 +139,13 @@ CYCLE_STATE cycle_test_enzymes[] = {
 	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
 };
 
+CYCLE_STATE cycle_test_thermo[] = {
+	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
+	{ "Temp Thermo 80",			THERM,						300, NULL, temp_is_80 },
+	{ "Cooling",				RELAYS_OFF,					10, NULL, NULL },
+	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
+};
+
 #endif
 
 typedef struct { 
@@ -157,6 +164,7 @@ CYCLE cycles[] = {
 	{ CYCLE_COMPLET_FUTS,		"Cycle complet Fûts",	Cycle_complet_futs,			NULL },
 #ifdef TEST
 	{ CYCLE_TEST_OUTPUT, 		"Test Outputs",			cycle_test_output,			NULL },
+	{ CYCLE_TEST_THERMO,		"Test Thermo",			cycle_test_thermo,			NULL },
 	{ CYCLE_TEST_ENZYMES,		"Test Enzymes",			cycle_test_enzymes,			NULL },
 #endif /* TEST*/ 	
 	{ CYCLE_LAST, 				NULL,					NULL,						NULL }
