@@ -1,1 +1,4 @@
 build-*
+.vscode/
+hard/fp-info-cache
+hard/kegcip_hard-backups/
