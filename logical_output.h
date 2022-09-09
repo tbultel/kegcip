@@ -16,7 +16,8 @@
 #define EV3B	(1<<9)
 #define PUMP	(1<<10)
 #define THERM	(1<<11)
-#define BUZ		(1<<12)
+#define EV8		(1<<12)
+#define BUZ		(1<<13)
 
 #define NB_VANNES	10
 

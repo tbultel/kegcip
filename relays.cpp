@@ -13,6 +13,7 @@
 #include "thread.h"
 #include "relays.h"
 #include "pinout.h"
+#include "logical_output.h"
 
 #define IO_BOARD_ADDR 0x27
 
@@ -20,35 +21,24 @@ static void relay_thread();
 static int relayThreadId = -1;
 static bool ready = false;
 
-#define EV1A	(1<<0)
-#define EV2A	(1<<1)
-#define EV3A	(1<<2)
-#define EV4		(1<<3)
-#define EV5		(1<<4)
-#define EV6 	(1<<5)
-#define EV7 	(1<<6)
-#define EV1B	(1<<7)
-#define EV2B	(1<<8)
-#define EV3B	(1<<9)
-#define PUMP	(1<<10)
-#define THERM	(1<<11)
-#define BUZ		(1<<12)
-
 static const char* relays_name[16]= {
-	"EV1A",
-	"EV2A",
-	"EV3A",
-	"EV4",
-	"EV5",
-	"EV6",
-	"EV7",
-	"EV1B",
-	"EV2B",
-	"EV3B",
-	"PUMP",
-	"THERM",
-	"BUZ"
+	"EV1A",	//0
+	"EV2A",	//1
+	"EV3A",	//2
+	"EV4",	//3
+	"EV5",	//4
+	"EV6",	//5
+	"EV7",	//6
+	"EV1B",	//7
+	"EV2B",	//8
+	"EV3B",	//9
+	"PUMP",	//10
+	"THERM",//11
+	"EV8",	//12
+	"BUZ"	//13
 };
+
+	
 
 // State of relays
 static uint16_t relays_state = 0x0000;

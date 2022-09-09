@@ -12,6 +12,9 @@ typedef enum {
 #ifdef TEST
 	CYCLE_TEST_OUTPUT,
 	CYCLE_TEST_THERMO,
+	CYCLE_TEST_CIRCU1,
+	CYCLE_TEST_CIRCU2,
+	CYCLE_TEST_CIRCU3,
 	CYCLE_TEST_ENZYMES,
 #endif	
 	CYCLE_LAST
@@ -23,7 +26,7 @@ typedef bool (*ACTION) (void);
 typedef struct {
 	const char* name;
 	uint16_t	relays;
-	uint32_t	delaySec;	// cycle delay, in seconds
+	uint32_t	delaySec;	// cycle delay, in seconds. This time is waited before checking transition (where there is one)
 	TRANSITION	transition;	// condition to go to next state, in addition to delay
 	ACTION		action;		// action done when entering state
 } CYCLE_STATE;

@@ -31,14 +31,14 @@ CYCLE_STATE Desinfection[] = {
 	{"Démarrage désinfection", 	RELAYS_OFF, 		5,	 NULL, NULL},
 	{"Amorçage acide", EV3A | EV4 , 	30,	 NULL, NULL},
 	{"Transfert acide", EV3A | EV4 | PUMP, ONE_MINUTE, acid_low, NULL },
-	{"Cycle acide", EV4 | PUMP, 15*ONE_MINUTE, NULL, NULL},
-	{"Vidange acide", EV5 | EV3B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Cycle acide", EV4 | EV8 | PUMP, 15*ONE_MINUTE, NULL, NULL},
+	{"Vidange acide", EV8 | EV5 | EV3B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
     {"Démarrage eau", 	RELAYS_OFF, 		5,	 NULL, NULL},
 	{"Amorçage eau", EV2A | EV4 , 30, NULL, NULL},
 	{"Transfert eau", EV2A | EV4 | PUMP, ONE_MINUTE, water_low, NULL},
-	{"Cycle Rinçage", EV4 | PUMP, 10*ONE_MINUTE, NULL, NULL},
-	{"Vidange eau", EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Cycle Rinçage", EV4 | EV8 | PUMP, 10*ONE_MINUTE, NULL, NULL},
+	{"Vidange eau", EV8 | EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Désinfection terminée", RELAYS_OFF, 5, NULL, NULL},
 	{ NULL, RELAYS_OFF, 0, NULL, NULL},
@@ -46,16 +46,16 @@ CYCLE_STATE Desinfection[] = {
 
 CYCLE_STATE Whirlpool[] = {
 	{"Démarrage Whirlpool", RELAYS_OFF, 5, NULL, NULL},
-	{"Amorçage Whirlpool", EV4 , 30, NULL, NULL},
-	{"Whirlpool", EV4 | PUMP, 10*ONE_MINUTE, NULL,	NULL},
+	{"Amorçage Whirlpool", EV4 | EV8 , 30, NULL, NULL},
+	{"Whirlpool", EV4 | EV8 | PUMP, 10*ONE_MINUTE, NULL,	NULL},
 	{"Whirlpool terminé", RELAYS_OFF, 5, NULL, NULL},
 	{ NULL, RELAYS_OFF, 0, NULL, NULL},	
 };
 
 CYCLE_STATE Transfert[] = {
 	{"Démarrage Transfert", RELAYS_OFF, 5, NULL, NULL},
-	{"Amorçage Transfert", EV4 , 30, NULL, NULL},
-	{"Transfert", EV4 | PUMP, 1, ack_transfer,	NULL},
+	{"Amorçage Transfert", EV4 | EV8 , 30, NULL, NULL},
+	{"Transfert", EV4 | EV8 | PUMP, 1, ack_transfer,	NULL},
 	{"Transfert terminé", RELAYS_OFF, 5, NULL, NULL},
 	{ NULL, RELAYS_OFF, 0, NULL, NULL},
 };
@@ -63,16 +63,16 @@ CYCLE_STATE Transfert[] = {
 
 CYCLE_STATE Lavage[] = {
 	{"Démarrage lavage", RELAYS_OFF, 5, NULL, NULL},
-	{"Préchauffage soude", THERM, 1, temp_is_80, NULL},
-	{"Amorçage soude", EV1A , 30, NULL, NULL},
-	{"Transfert soude", EV1A | PUMP, ONE_MINUTE, soda_low, NULL},
-	{"Cycle soude", EV4 | PUMP, 30*ONE_MINUTE, NULL,	NULL},
-	{"Vidange soude", EV5 | EV1B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Préchauffage soude", EV1A | EV5 | EV1B | PUMP | THERM, 1, temp_is_80, NULL},
+	{"Amorçage soude", EV1A | EV4 , 30, NULL, NULL},
+	{"Transfert soude", EV1A | EV4 | PUMP, ONE_MINUTE, soda_low, NULL},
+	{"Cycle soude", EV4 | EV8 |  PUMP, 30*ONE_MINUTE, NULL,	NULL},
+	{"Vidange soude", EV8 | EV5 | EV1B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin soude", RELAYS_OFF, 5, NULL, NULL},
-	{"Amorcage eau", EV2A , 30, NULL,	NULL},
-	{"Transfert eau", EV2A | PUMP, ONE_MINUTE, water_low, NULL },
-	{"Cycle eau", EV4 | PUMP, 10*ONE_MINUTE, NULL, NULL},
-	{"Vidange eau", EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Amorcage eau", EV2A | EV4 , 30, NULL,	NULL},
+	{"Transfert eau", EV2A | EV4 | PUMP, ONE_MINUTE, water_low, NULL },
+	{"Cycle eau", EV4 | EV8 | PUMP, 10*ONE_MINUTE, NULL, NULL},
+	{"Vidange eau", EV8 | EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Lavage terminé", RELAYS_OFF, 0, NULL, NULL},
 	{ NULL, RELAYS_OFF, 0, NULL, NULL},
@@ -80,30 +80,30 @@ CYCLE_STATE Lavage[] = {
 
 CYCLE_STATE Cycle_complet_futs[] = {
 	{"Démarrage cycle complet fûts", RELAYS_OFF, 5, NULL, NULL},
-	{"Préchauffage soude", THERM, 1, temp_is_80, NULL},
+	{"Préchauffage soude", EV1A | EV5 | EV1B | PUMP | THERM, 1, temp_is_80, NULL},
 	{"Purge air", EV6 | EV5 | EV2B, 30, NULL, NULL},
-	{"Amorçage soude", EV1A , 30, NULL, NULL},
-	{"Transfert soude", EV1A | PUMP, ONE_MINUTE, soda_low, NULL},
-	{"Cycle soude ", EV4 | PUMP, 2*ONE_MINUTE, NULL,	NULL},
-	{"Vidange soude", EV5 | EV1B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Amorçage soude", EV1A | EV4 , 30, NULL, NULL},
+	{"Transfert soude", EV1A | EV4 | PUMP, ONE_MINUTE, soda_low, NULL},
+	{"Cycle soude", EV4 | EV8 |  PUMP, 2*ONE_MINUTE, NULL,	NULL},
+	{"Vidange soude", EV8 | EV5 | EV1B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin soude", RELAYS_OFF, 5, NULL, NULL},
-	{"Purge air", EV6 | EV5 | EV2B, 30, NULL, NULL},
-	{"Amorçage eau", EV2A , 30, NULL,	NULL},
-	{"Transfert eau", EV2A | PUMP, ONE_MINUTE, water_low, NULL},
-	{"cycle eau", EV4 | PUMP, 2*ONE_MINUTE, NULL, NULL},
-	{"Vidange eau",  EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Purge air", EV6 | EV5 | EV2B, 30, NULL, NULL},	
+	{"Amorcage eau", EV2A | EV4 , 30, NULL,	NULL},
+	{"Transfert eau", EV2A | EV4 | PUMP, ONE_MINUTE, water_low, NULL },
+	{"Cycle eau", EV4 | EV8 | PUMP, 10*ONE_MINUTE, NULL, NULL},
+	{"Vidange eau", EV8 | EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Purge air", EV6 | EV5 | EV2B, 30, NULL, NULL},
-	{"Amorçage acide", EV3A | EV4, 30, NULL, NULL},
-	{"Transfert acide", EV3A | EV4 | PUMP, ONE_MINUTE, acid_low, NULL},
-	{"Cycle acide", EV4 | PUMP, 2*ONE_MINUTE, NULL,	NULL},
-	{"Vidange acide", EV5 | EV3B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Amorçage acide", EV3A | EV4 , 30, NULL, NULL},
+	{"Transfert acide", EV3A | EV4 | PUMP, ONE_MINUTE, acid_low, NULL },
+	{"Cycle acide", EV4 | EV8 | PUMP, 2*ONE_MINUTE, NULL, NULL},
+	{"Vidange acide", EV8 | EV5 | EV3B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
 	{"Purge air", EV6 | EV5 | EV2B, 30, NULL, NULL},
-	{"Amorçage eau", EV2A , 30, NULL,	NULL},
-	{"Transfert eau", EV2A | PUMP, ONE_MINUTE, water_low, NULL},
-	{"cycle eau", EV4 | PUMP, 2*ONE_MINUTE, NULL, NULL},
-	{"Vidange eau",  EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
+	{"Amorcage eau", EV2A | EV4 , 30, NULL,	NULL},
+	{"Transfert eau", EV2A | EV4 | PUMP, ONE_MINUTE, water_low, NULL },
+	{"Cycle eau", EV4 | EV8 | PUMP, 10*ONE_MINUTE, NULL, NULL},
+	{"Vidange eau", EV8 | EV5 | EV2B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Purge air", EV6 | EV5 | EV2B, 30, NULL, NULL},
 	{"Purge CO2", EV7 | EV5 | EV2B, 30, NULL, NULL},
@@ -123,7 +123,8 @@ CYCLE_STATE cycle_test_output[] = {
 	{ "EV7", 					EV7,						1, NULL, NULL },
 	{ "EV1B", 					EV1B,						1, NULL, NULL },
 	{ "EV2B", 					EV2B,						1, NULL, NULL },
-	{ "EV3B", 					EV3B,						1, start_pressed, NULL },
+	{ "EV3B", 					EV3B,						1, NULL, NULL },
+	{ "EV8", 					EV8,						1, start_pressed, NULL },
 	{ "PUMP", 					PUMP,						1, NULL, NULL },
 	{ "THERM", 					THERM,						10, NULL, NULL },
 	{ "BUZ", 					BUZ,						1, NULL, NULL },
@@ -141,10 +142,29 @@ CYCLE_STATE cycle_test_enzymes[] = {
 
 CYCLE_STATE cycle_test_thermo[] = {
 	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
-	{ "Temp Thermo 80",			THERM,						1200, NULL, temp_is_80 },
+	{"Temp Thermo 80", EV1A | EV5 | EV1B | PUMP | THERM, 	1, temp_is_80, NULL},
 	{ "Cooling",				RELAYS_OFF,					10, NULL, NULL },
 	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
 };
+
+CYCLE_STATE cycle_test_circu1[] = {
+	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
+	{"Circulation 2", EV1A | EV5 | EV1B | PUMP , 	60, NULL, NULL},
+	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
+};
+
+CYCLE_STATE cycle_test_circu2[] = {
+	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
+	{"Circulation 2", EV2A | EV5 | EV2B | PUMP , 	60, NULL, NULL},
+	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
+};
+
+CYCLE_STATE cycle_test_circu3[] = {
+	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
+	{"Circulation 3", EV3A | EV5 | EV3B | PUMP , 	60, 		NULL, NULL},
+	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
+};
+
 
 #endif
 
@@ -165,6 +185,9 @@ CYCLE cycles[] = {
 #ifdef TEST
 	{ CYCLE_TEST_OUTPUT, 		"Test Outputs",			cycle_test_output,			NULL },
 	{ CYCLE_TEST_THERMO,		"Test Thermo",			cycle_test_thermo,			NULL },
+	{ CYCLE_TEST_CIRCU1,		"Circulation 1",		cycle_test_circu1,			NULL },
+	{ CYCLE_TEST_CIRCU2,		"Circulation 2",		cycle_test_circu2,			NULL },
+	{ CYCLE_TEST_CIRCU3,		"Circulation 3",		cycle_test_circu3,			NULL },
 	{ CYCLE_TEST_ENZYMES,		"Test Enzymes",			cycle_test_enzymes,			NULL },
 #endif /* TEST*/ 	
 	{ CYCLE_LAST, 				NULL,					NULL,						NULL }
