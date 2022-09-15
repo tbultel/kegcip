@@ -27,7 +27,10 @@ endif
 endif
 
 ARDMK_DIR=./Arduino-Makefile
-ARDUINO_DIR=../arduino-1.8.19
+ARDUINO_DIR=/opt/arduino-1.8.19
+
+
+USER_LIB_PATH=$(HOME)/Arduino/libraries
 
 include $(ARDMK_DIR)/Teensy.mk
 
