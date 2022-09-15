@@ -131,11 +131,9 @@ static void do_set_relays_MCP23017(uint16_t relays) {
 
 	for (int ix=0; ix<16;ix++) {
 		if ((relays & (1<<ix)) == (1<<ix)) {
-			printf("%d low\n", ix);
 			mcp.digitalWrite(ix, LOW);
 		}
 		else {
-			printf("%d high\n", ix);
 			mcp.digitalWrite(ix, HIGH);
 		}
 	}
@@ -146,6 +144,11 @@ static void do_set_relays(uint16_t relays) {
 #ifdef I2C_STATIC_RELAYS_BOARD
 	do_set_relays_static(relays);
 #else
+
+	relays_state = relays;
+
+	printf("%s: relays to 0x%x\n", __func__, relays);
+
 	do_set_relays_MCP23017(relays);
 #endif
 
@@ -169,9 +172,13 @@ static void relay_thread() {
 
 static void relays_set_state(uint16_t relays) {
 	uint16_t oldstate = relays_state;
+
 	if (oldstate == relays)
 		return;
+
 	relays_state = relays;
+
+//	printf("%s: delayed set relays to 0x%x\n", __func__, relays);
 	
 	if (relay_change_callback)
 		relay_change_callback(relays_state);
@@ -203,6 +210,10 @@ void relays_set(uint16_t relays) {
 		return;
 
 	relays_set_state(relays);
+}
+
+void relays_set_sync(uint16_t relays) {
+	do_set_relays(relays);
 }
 
 void relays_register_callback(relay_callback cb) {

@@ -29,9 +29,10 @@ static bool ack_transfer() {
 
 CYCLE_STATE Desinfection[] = {
 	{"Démarrage désinfection", 	RELAYS_OFF, 		5,	 NULL, NULL},
-	{"Amorçage acide", EV3A | EV4 , 	30,	 NULL, NULL},
+	{"Amorçage acide", EV3A | EV4 , 	30,	 start_pressed, NULL},
 	{"Transfert acide", EV3A | EV4 | PUMP, ONE_MINUTE, acid_low, NULL },
-	{"Cycle acide", EV4 | EV8 | PUMP, 15*ONE_MINUTE, NULL, NULL},
+	{"Cycle acide", EV4 | EV8 | PUMP, 60, NULL, NULL},
+	//	{"Cycle acide", EV4 | EV8 | PUMP, 15*ONE_MINUTE, NULL, NULL},
 	{"Vidange acide", EV8 | EV5 | EV3B | PUMP, ONE_MINUTE, NULL, NULL},
 	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
     {"Démarrage eau", 	RELAYS_OFF, 		5,	 NULL, NULL},
@@ -54,7 +55,7 @@ CYCLE_STATE Whirlpool[] = {
 
 CYCLE_STATE Transfert[] = {
 	{"Démarrage Transfert", RELAYS_OFF, 5, NULL, NULL},
-	{"Amorçage Transfert", EV4 | EV8 , 30, NULL, NULL},
+	{"Amorçage Transfert", EV4 | EV8 , 1, ack_transfer, NULL},
 	{"Transfert", EV4 | EV8 | PUMP, 1, ack_transfer,	NULL},
 	{"Transfert terminé", RELAYS_OFF, 5, NULL, NULL},
 	{ NULL, RELAYS_OFF, 0, NULL, NULL},
@@ -165,6 +166,11 @@ CYCLE_STATE cycle_test_circu3[] = {
 	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
 };
 
+CYCLE_STATE cycle_magic[] = {
+	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
+	{ "Magic 3", 				EV6 , 						60,	NULL, NULL},
+	{ NULL, 					RELAYS_OFF,					0, NULL, NULL }
+};
 
 #endif
 
@@ -189,6 +195,7 @@ CYCLE cycles[] = {
 	{ CYCLE_TEST_CIRCU2,		"Circulation 2",		cycle_test_circu2,			NULL },
 	{ CYCLE_TEST_CIRCU3,		"Circulation 3",		cycle_test_circu3,			NULL },
 	{ CYCLE_TEST_ENZYMES,		"Test Enzymes",			cycle_test_enzymes,			NULL },
+	{ CYCLE_MAGIC,				"Magique",				cycle_magic,				NULL },
 #endif /* TEST*/ 	
 	{ CYCLE_LAST, 				NULL,					NULL,						NULL }
 };
@@ -375,6 +382,8 @@ void cycle_suspend() {
 void cycle_resume() {
 
 	status_led_set_period(DEFAULT_LED_PERIOD_MS);
+
+	start_button_register_callback(NULL);
 
 	if (currentCycle == NULL) {
 		suspended = false;
