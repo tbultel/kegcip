@@ -16,7 +16,6 @@ touch /home/$USER/.docker_bash_history
 # Build image each time
 cd $(dirname $0)
 
-xhost +
 docker build --network=host --build-arg=uid=$(id -u) -t kegcip_builder:latest .
 
 if [ $? -ne 0 ]; then

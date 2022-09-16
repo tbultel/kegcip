@@ -82,15 +82,14 @@ RUN usermod -a -G sudo docker_user
 
 ENV DOCKER_USER_HOME=/home/docker_user
 
-RUN apt install -y libsm6
-
 USER docker_user
 
-RUN /bin/arduino-cli lib install U8g2
 RUN /bin/arduino-cli lib install DallasTemperature
 RUN /bin/arduino-cli lib install RotaryEncoder
 RUN /bin/arduino-cli lib install "Adafruit MCP23017 Arduino Library"
 RUN /bin/arduino-cli lib install "Adafruit BusIO"
+
+RUN cd ${DOCKER_USER_HOME}/Arduino/libraries && git clone https://github.com/Linatsea/U8g2.git
 
 RUN mkdir -p ${DOCKER_USER_HOME}/.buildroot-ccache
 
