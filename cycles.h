@@ -16,7 +16,6 @@ typedef enum {
 	CYCLE_TEST_CIRCU2,
 	CYCLE_TEST_CIRCU3,
 	CYCLE_TEST_ENZYMES,
-	CYCLE_MAGIC,
 #endif	
 	CYCLE_LAST
 } CYCLE_ID;
@@ -34,7 +33,7 @@ typedef struct {
 
 extern void cycles_init();
 
-typedef void (*cyclesCallback)(const char *stateName, uint32_t seconds, uint32_t totalSeconds);
+typedef void (*cyclesCallback)(const char *stateName, uint32_t seconds, uint32_t totalSeconds, uint32_t stateDuty);
 
 extern void cycles_set_callback(cyclesCallback cb);
 

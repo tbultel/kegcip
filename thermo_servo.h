@@ -2,7 +2,7 @@
 
 // TODO findout the right value for the application
 #define THERMO_SERVO_TEMP_MAX		90
-#define THERMO_SERVO_TEMP_DEFAULT	80
+#define THERMO_SERVO_TEMP_DEFAULT	27
 #define THERMO_SERVO_TEMP_ENZYME	50
 
 // max number of seconds to rise the temp of 1 deg C

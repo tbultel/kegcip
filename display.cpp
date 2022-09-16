@@ -173,11 +173,12 @@ static void displayProgressBar(uint16_t xpos, uint16_t ypos, uint16_t width, uin
 static const char * lastStateName = NULL;
 static uint32_t lastSeconds = 0;
 static uint32_t lastTotalSeconds = 0;
+static uint32_t lastStateDuty = 0;
 
 // Notice that this code can be executed from the rotary click ISR context,
 // so no sleep is allowed
 
-static void display_cycle_update(const char* stateName, uint32_t seconds, uint32_t totalSeconds) {
+static void display_cycle_update(const char* stateName, uint32_t seconds, uint32_t totalSeconds, uint32_t stateDuty) {
 
 	if (currentContext != MAIN_MENU_CONTEXT)
 		return;
@@ -193,8 +194,10 @@ static void display_cycle_update(const char* stateName, uint32_t seconds, uint32
 	u8g2.setDrawColor(1);
 
     u8g2.setFont(u8g2_font_4x6_mf);
-	uint32_t width = u8g2.getUTF8Width(stateName);
-	u8g2.drawUTF8((SCREEN_WIDTH-width)/2, CYCLE_DISPLAY_POS_Y + fontHeight, stateName);
+	char stateInfo[64];
+	sprintf(stateInfo, "%s (%d)", stateName, stateDuty);
+	uint32_t width = u8g2.getUTF8Width(stateInfo);
+	u8g2.drawUTF8((SCREEN_WIDTH-width)/2, CYCLE_DISPLAY_POS_Y + fontHeight, stateInfo);
 
 	char remainingTimeS[16];
 	sprintf(remainingTimeS, "Reste: %lu s", totalSeconds-seconds );
@@ -214,7 +217,7 @@ static void display_cycle_update(const char* stateName, uint32_t seconds, uint32
 	display_thread_wakeup();
 }
 
-static void display_cycle_update_callback(const char* stateName, uint32_t seconds, uint32_t totalSeconds) {
+static void display_cycle_update_callback(const char* stateName, uint32_t seconds, uint32_t totalSeconds, uint32_t stateDuty) {
 
 	if (!initialized)
 		return;
@@ -226,8 +229,9 @@ static void display_cycle_update_callback(const char* stateName, uint32_t second
 	lastStateName = stateName;
 	lastSeconds = seconds;
 	lastTotalSeconds = totalSeconds;
+	lastStateDuty = stateDuty;
 
-	display_cycle_update(stateName, seconds, totalSeconds);
+	display_cycle_update(stateName, seconds, totalSeconds, stateDuty);
 
 }
 
@@ -352,7 +356,7 @@ static void display_swap_context() {
 			diag_thread_suspend();
 			display_clear_screen();
 			display_menu();
-			display_cycle_update(lastStateName, lastSeconds, lastTotalSeconds);
+			display_cycle_update(lastStateName, lastSeconds, lastTotalSeconds, lastStateDuty);
 			break;
 		case DIAG1_CONTEXT:
 		case DIAG2_CONTEXT:
