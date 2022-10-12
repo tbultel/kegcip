@@ -85,7 +85,7 @@ CYCLE_STATE Desinfection[] = {
 	{"Démarrage désinfection", 	RELAYS_OFF, 		5,	 NULL, NULL},
 	AMORCAGE_ACIDE,
 	TRANSFER_ACIDE,
-	{"Cycle acide", EV4 | EV8 | PUMP, 60, NULL, NULL},
+	{"Cycle acide", EV4 | EV8 | PUMP, 10*ONE_MINUTE, NULL, NULL},
 	//	{"Cycle acide", EV4 | EV8 | PUMP, 15*ONE_MINUTE, NULL, NULL},
 	VIDANGE_ACIDE,
 	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
