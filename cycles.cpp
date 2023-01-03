@@ -30,10 +30,10 @@ static bool ack_transfer() {
 
 
 #define PURGE_AIR_POST_ACIDE \
-	{"Purge air-pa", EV6 | EV5 | EV3B | EV8, 30, NULL, NULL}
+	{"Purge air-pa", EV6 | EV5 | EV2B | EV8, 30, NULL, NULL}
 
 #define PURGE_AIR_POST_SOUDE \
-	{"Purge air-ps", EV6 | EV5 | EV1B | EV8, 30, NULL, NULL}
+	{"Purge air-ps", EV6 | EV5 | EV2B | EV8, 30, NULL, NULL}
 
 #define PURGE_AIR_POST_EAU \
 	{"Purge air-pe", EV6 | EV5 | EV2B | EV8, 30, NULL, NULL}
