@@ -25,6 +25,18 @@ static bool ack_transfer() {
 	return start_pressed();
 }
 
+bool therm_forced = false;
+
+static bool hold_therm() {
+	therm_forced = true;
+	return true;
+}
+
+static bool release_therm() {
+	therm_forced = false;
+	return true;
+}
+
 
 #define ONE_MINUTE	60
 
@@ -74,12 +86,13 @@ static bool ack_transfer() {
 
 #define RINCAGE_FERMENTEUR \
 	{"Démarrage eau", 	RELAYS_OFF, 		3,	 NULL, NULL},\
-	{"Rincage", EV2A | EV4 | EV2B , 5*ONE_MINUTE, NULL, NULL},\
-	{"Fin eau", RELAYS_OFF, 3, NULL, NULL}
+	{"Rincage", EV2A | EV4 | EV2B , 		ONE_MINUTE, NULL, NULL},\
+	{"Vidange eau", EV2B, 					5, start_pressed, NULL },\
+	{"Fin eau", RELAYS_OFF, 				3, NULL, NULL}
 
 #define RINCAGE_FUT \
     {"Démarrage eau", 	RELAYS_OFF, 		3,	 NULL, NULL},\
-	{"Rincage", EV2A | EV4 | EV2B | PUMP , ONE_MINUTE, NULL, NULL},\
+	{"Rincage", EV2A | EV4 | EV2B | PUMP , 	ONE_MINUTE, NULL, NULL},\
 	{"Vidange eau", EV2B, 					5, start_pressed, NULL },\
 	{"Fin eau", RELAYS_OFF, 3, NULL, NULL}
 
@@ -135,6 +148,7 @@ CYCLE_STATE Lavage[] = {
 CYCLE_STATE Cycle_complet_futs[] = {
 	{"Démarrage ...", RELAYS_OFF, 5, NULL, NULL},
 	PRECHAUFFAGE_SOUDE,
+	{"Maintient thermo", RELAYS_OFF, 1, NULL, hold_therm },
 	AMORCAGE_SOUDE,
 	TRANSFER_SOUDE,
 	{"Cycle soude", EV4 | EV8 |  PUMP, ONE_MINUTE, NULL,	NULL},
@@ -142,6 +156,7 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	{"Fin soude", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_SOUDE,
 	RINCAGE_FUT,
+	VIDANGE_EAU,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_EAU,
 	AMORCAGE_ACIDE,
@@ -151,9 +166,11 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_ACIDE,
 	RINCAGE_FUT,
+	VIDANGE_EAU,
 	PURGE_AIR_POST_EAU,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"CO2 mon amour", EV7 | EV2B },
+	{"Libération thermo", RELAYS_OFF, 1, NULL, release_therm },
 	{"Cycle complet fût terminé", RELAYS_OFF, 0, NULL, NULL},
 	CYCLE_END
 };

@@ -27,3 +27,4 @@
 
 extern void logical_output_init();
 extern void logical_output_set(uint16_t output);
+extern void logical_output_force_off();

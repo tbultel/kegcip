@@ -51,7 +51,7 @@ void emergency_button_tick() {
 }
 
 static void emergency_enter() {
-	logical_output_set(RELAYS_OFF);
+	logical_output_force_off();
 
 	main_menu_disable();
 	start_button_disable();
