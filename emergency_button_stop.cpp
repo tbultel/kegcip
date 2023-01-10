@@ -11,6 +11,7 @@
 #include "cycles.h"
 #include "logical_output.h"
 #include "status_led.h"
+#include "thermo_servo.h"
 
 static bool initialized = false;
 
@@ -51,12 +52,14 @@ void emergency_button_tick() {
 }
 
 static void emergency_enter() {
+	cycle_suspend();
+	thermo_off();
 	logical_output_force_off();
 
 	main_menu_disable();
 	start_button_disable();
 	rotary_button_disable();
-	cycle_suspend();
+
 	display_set_context(EMERGENCY_CONTEXT);
 }
 static void emergency_exit() {
