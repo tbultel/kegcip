@@ -77,7 +77,8 @@ static void thermo_servo_thread() {
 
 				printf("Check temp rising (old %s (%d), current %s (%d))\n", old_tempS, (int)old_temp, tempS, (int)temp);
 
-				if (temp-old_temp < 1.0) {
+				// Do not check the temperature delta if it is decreasing. (can happen when fresh soda comes back into the tank)
+				if (temp > old_temp && (temp-old_temp < 1.0)) {
 					alarm = true;
 				}
 				old_temp = temp;
@@ -87,12 +88,15 @@ static void thermo_servo_thread() {
 		// check the heating timeout 
 		if (alarm) {
 			cycle_stop();
+			thermo_off();
 			logical_output_set(RELAYS_OFF);
 			main_menu_disable();
 			start_button_disable();
 			rotary_button_disable();
 			display_set_context(ALARM_CONTEXT);
 			printf("ERROR: temperature runwaway !\n");
+			// Dies here
+			for (;;) {}
 		}
 
 		if (heating) {
