@@ -92,7 +92,7 @@ static bool release_therm() {
 
 #define RINCAGE_FUT \
     {"Démarrage eau", 	RELAYS_OFF, 		3,	 NULL, NULL},\
-	{"Rincage", EV2A | EV4 | EV2B | PUMP , 	ONE_MINUTE, NULL, NULL},\
+	{"Rincage", EV2A | EV4 | EV2B | PUMP , 	30, NULL, NULL},\
 	{"Vidange eau", EV2B, 					5, start_pressed, NULL },\
 	{"Fin eau", RELAYS_OFF, 3, NULL, NULL}
 
@@ -156,7 +156,6 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	{"Fin soude", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_SOUDE,
 	RINCAGE_FUT,
-	VIDANGE_EAU,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_EAU,
 	AMORCAGE_ACIDE,
@@ -166,7 +165,6 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_ACIDE,
 	RINCAGE_FUT,
-	VIDANGE_EAU,
 	PURGE_AIR_POST_EAU,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"CO2 mon amour", EV7 | EV2B },
@@ -231,6 +229,45 @@ CYCLE_STATE cycle_test_circu3[] = {
 
 #endif
 
+
+
+CYCLE_STATE cycle_vide_acide_futs[] = {
+	{"Démarrage ...", RELAYS_OFF, 5, NULL, NULL},
+	VIDANGE_ACIDE,
+	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
+	PURGE_AIR_POST_ACIDE,
+	RINCAGE_FUT,
+	PURGE_AIR_POST_EAU,
+	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
+	{"Vidange acide terminée", RELAYS_OFF, 0, NULL, NULL},
+	CYCLE_END
+};
+
+
+CYCLE_STATE cycle_vide_soude_futs[] = {
+	{"Démarrage ...", RELAYS_OFF, 5, NULL, NULL},
+	VIDANGE_SOUDE,
+	{"Fin soude", RELAYS_OFF, 5, NULL, NULL},
+	PURGE_AIR_POST_SOUDE,
+	RINCAGE_FUT,
+	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
+	PURGE_AIR_POST_EAU,
+	{"Vidange soude terminée", RELAYS_OFF, 0, NULL, NULL},
+	CYCLE_END
+};
+
+
+CYCLE_STATE cycle_vide_eau_futs[] = {
+	{"Démarrage ...", RELAYS_OFF, 5, NULL, NULL},
+	VIDANGE_EAU,
+	PURGE_AIR_POST_EAU,
+	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
+	{"Vidange eau terminée", RELAYS_OFF, 0, NULL, NULL},
+	CYCLE_END
+};
+
+
+
 typedef struct { 
 	CYCLE_ID 			id;
 	const char*			name;
@@ -252,7 +289,10 @@ CYCLE cycles[] = {
 	{ CYCLE_TEST_CIRCU2,		"Circulation 2",		cycle_test_circu2,			NULL },
 	{ CYCLE_TEST_CIRCU3,		"Circulation 3",		cycle_test_circu3,			NULL },
 	{ CYCLE_TEST_ENZYMES,		"Test Enzymes",			cycle_test_enzymes,			NULL },
-#endif /* TEST*/ 	
+#endif /* TEST*/
+	{ CYCLE_VIDE_ACIDE_FUTS,	"Vide Acide Futs",		cycle_vide_acide_futs,		NULL },
+	{ CYCLE_VIDE_SOUDE_FUTS,	"Vide Soude Futs",		cycle_vide_soude_futs,		NULL },
+	{ CYCLE_VIDE_EAU_FUTS,		"Vide Eau Futs",		cycle_vide_eau_futs,		NULL },
 	{ CYCLE_LAST, 				NULL,					NULL,						NULL }
 };
 
@@ -303,6 +343,7 @@ static void cycle_thread() {
 
 			if (state->name == NULL)
 				break;
+			printf("Calc: total (%d) += %d (%s)\n", totalSecs, state->delaySec, state->name );
 			totalSecs += state->delaySec;
 		}
 
@@ -334,7 +375,7 @@ static void cycle_thread() {
 				for (uint32_t ix=0; ix<state->delaySec; ix++) {
 					if (cycles_callback)
 						cycles_callback(state->name, ++elapsedSecs, totalSecs, state->delaySec-ix);
-					threads.delay(ONE_SECOND);
+					threads.delay(1000);
 				}
 			}
 		
