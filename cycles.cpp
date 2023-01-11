@@ -52,13 +52,10 @@ static bool release_therm() {
 
 
 #define AMORCAGE_ACIDE \
-	{"Amorçage acide", EV3A | EV4 , 30,	 NULL, NULL}
-
-#define AMORCAGE_EAU \
-	{"Amorcage eau", EV2A | EV4 , 30, NULL,	NULL}
+	{"Amorçage acide", EV3A | EV4 , 10,	 NULL, NULL}
 
 #define AMORCAGE_SOUDE \
-	{"Amorçage soude", EV1A | EV4 , 1, NULL, NULL}
+	{"Amorçage soude", EV1A | EV4 , 10, NULL, NULL}
 
 
 #define DUREE_TRANFERT 10
@@ -156,7 +153,6 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	{"Fin soude", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_SOUDE,
 	RINCAGE_FUT,
-	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_EAU,
 	AMORCAGE_ACIDE,
 	TRANSFER_ACIDE,
@@ -166,7 +162,6 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	PURGE_AIR_POST_ACIDE,
 	RINCAGE_FUT,
 	PURGE_AIR_POST_EAU,
-	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"CO2 mon amour", EV7 | EV2B },
 	{"Libération thermo", RELAYS_OFF, 1, NULL, release_therm },
 	{"Cycle complet fût terminé", RELAYS_OFF, 0, NULL, NULL},
@@ -343,7 +338,7 @@ static void cycle_thread() {
 
 			if (state->name == NULL)
 				break;
-			printf("Calc: total (%d) += %d (%s)\n", totalSecs, state->delaySec, state->name );
+			printf("Calc: total (%d) += %ld (%s)\n", totalSecs, state->delaySec, state->name );
 			totalSecs += state->delaySec;
 		}
 
