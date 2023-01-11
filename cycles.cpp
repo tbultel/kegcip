@@ -67,13 +67,14 @@ static bool release_therm() {
 	{"Transfert soude", EV1A | EV4 | PUMP, DUREE_TRANFERT, soda_low, NULL}
 
 
-#define DUREE_VIDANGE 90
+#define DUREE_VIDANGE ONE_MINUTE
+#define DUREE_VIDANGE_EAU_FUTS	30
 
 #define VIDANGE_ACIDE \
 	{"Vidange acide", EV8 | EV5 | EV3B | PUMP, DUREE_VIDANGE, NULL, NULL}
 
-#define VIDANGE_EAU \
-	{"Vidange eau", EV8 | EV5 | EV2B | PUMP, DUREE_VIDANGE, NULL, NULL}
+#define VIDANGE_EAU_FUTS \
+	{"Vidange eau", EV8 | EV4 | EV2B | PUMP, DUREE_VIDANGE_EAU_FUTS, NULL, NULL}
 
 #define VIDANGE_SOUDE \
 	{"Vidange soude", EV8 | EV5 | EV1B | PUMP, DUREE_VIDANGE, NULL, NULL}
@@ -90,7 +91,7 @@ static bool release_therm() {
 #define RINCAGE_FUT \
     {"Démarrage eau", 	RELAYS_OFF, 		3,	 NULL, NULL},\
 	{"Rincage", EV2A | EV4 | EV2B | PUMP , 	30, NULL, NULL},\
-	{"Vidange eau", EV2B, 					5, start_pressed, NULL },\
+	VIDANGE_EAU_FUTS,\
 	{"Fin eau", RELAYS_OFF, 3, NULL, NULL}
 
 #define CYCLE_END \
@@ -254,7 +255,7 @@ CYCLE_STATE cycle_vide_soude_futs[] = {
 
 CYCLE_STATE cycle_vide_eau_futs[] = {
 	{"Démarrage ...", RELAYS_OFF, 5, NULL, NULL},
-	VIDANGE_EAU,
+	VIDANGE_EAU_FUTS,
 	PURGE_AIR_POST_EAU,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Vidange eau terminée", RELAYS_OFF, 0, NULL, NULL},
@@ -338,7 +339,7 @@ static void cycle_thread() {
 
 			if (state->name == NULL)
 				break;
-			printf("Calc: total (%d) += %ld (%s)\n", totalSecs, state->delaySec, state->name );
+			printf("Calc: total (%ld) += %ld (%s)\n", totalSecs, state->delaySec, state->name );
 			totalSecs += state->delaySec;
 		}
 
