@@ -42,20 +42,20 @@ static bool release_therm() {
 
 
 #define PURGE_AIR_POST_ACIDE \
-	{"Purge air-pa", EV6 | EV5 | EV2B | EV8, 30, NULL, NULL}
+	{"Purge air-pa", EV6 | EV2B , 30, NULL, NULL}
 
 #define PURGE_AIR_POST_SOUDE \
-	{"Purge air-ps", EV6 | EV5 | EV2B | EV8, 30, NULL, NULL}
+	{"Purge air-ps", EV6 | EV2B , 30, NULL, NULL}
 
 #define PURGE_AIR_POST_EAU \
-	{"Purge air-pe", EV6 | EV5 | EV2B | EV8, 30, NULL, NULL}
+	{"Purge air-pe", EV6  | EV2B , 30, NULL, NULL}
 
 
 #define AMORCAGE_ACIDE \
-	{"Amorçage acide", EV3A | EV4 , 10,	 NULL, NULL}
+	{"Amorçage acide", EV3A | EV5 | EV3B , 30,	 NULL, NULL}
 
 #define AMORCAGE_SOUDE \
-	{"Amorçage soude", EV1A | EV4 , 10, NULL, NULL}
+	{"Amorçage soude", EV1A | EV5 | EV1B , 30, NULL, NULL}
 
 
 #define DUREE_TRANFERT 10
@@ -67,14 +67,14 @@ static bool release_therm() {
 	{"Transfert soude", EV1A | EV4 | PUMP, DUREE_TRANFERT, soda_low, NULL}
 
 
-#define DUREE_VIDANGE ONE_MINUTE
-#define DUREE_VIDANGE_EAU_FUTS	30
+#define DUREE_VIDANGE 			45
+#define DUREE_VIDANGE_EAU_FUTS	45
 
 #define VIDANGE_ACIDE \
 	{"Vidange acide", EV8 | EV5 | EV3B | PUMP, DUREE_VIDANGE, NULL, NULL}
 
 #define VIDANGE_EAU_FUTS \
-	{"Vidange eau", EV8 | EV4 | EV2B | PUMP, DUREE_VIDANGE_EAU_FUTS, NULL, NULL}
+	{"Vidange eau", EV8 | EV4 | EV2B , DUREE_VIDANGE_EAU_FUTS, NULL, NULL}
 
 #define VIDANGE_SOUDE \
 	{"Vidange soude", EV8 | EV5 | EV1B | PUMP, DUREE_VIDANGE, NULL, NULL}
@@ -89,7 +89,7 @@ static bool release_therm() {
 	{"Fin eau", RELAYS_OFF, 				3, NULL, NULL}
 
 #define RINCAGE_FUT \
-    {"Démarrage eau", 	RELAYS_OFF, 		3,	 NULL, NULL},\
+    {"Démarrage eau", 	RELAYS_OFF, 		3,	NULL, NULL},\
 	{"Rincage", EV2A | EV4 | EV2B | PUMP , 	30, NULL, NULL},\
 	VIDANGE_EAU_FUTS,\
 	{"Fin eau", RELAYS_OFF, 3, NULL, NULL}
@@ -145,9 +145,7 @@ CYCLE_STATE Lavage[] = {
 
 CYCLE_STATE Cycle_complet_futs[] = {
 	{"Démarrage ...", RELAYS_OFF, 5, NULL, NULL},
-	PRECHAUFFAGE_SOUDE,
 	{"Maintient thermo", RELAYS_OFF, 1, NULL, hold_therm },
-	AMORCAGE_SOUDE,
 	TRANSFER_SOUDE,
 	{"Cycle soude", EV4 | EV8 |  PUMP, ONE_MINUTE, NULL,	NULL},
 	VIDANGE_SOUDE,
@@ -155,7 +153,6 @@ CYCLE_STATE Cycle_complet_futs[] = {
 	PURGE_AIR_POST_SOUDE,
 	RINCAGE_FUT,
 	PURGE_AIR_POST_EAU,
-	AMORCAGE_ACIDE,
 	TRANSFER_ACIDE,
 	{"Cycle acide", EV4 | EV8 | PUMP, ONE_MINUTE, NULL, NULL},
 	VIDANGE_ACIDE,
@@ -233,7 +230,6 @@ CYCLE_STATE cycle_vide_acide_futs[] = {
 	{"Fin acide", RELAYS_OFF, 5, NULL, NULL},
 	PURGE_AIR_POST_ACIDE,
 	RINCAGE_FUT,
-	PURGE_AIR_POST_EAU,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Vidange acide terminée", RELAYS_OFF, 0, NULL, NULL},
 	CYCLE_END
@@ -247,7 +243,6 @@ CYCLE_STATE cycle_vide_soude_futs[] = {
 	PURGE_AIR_POST_SOUDE,
 	RINCAGE_FUT,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
-	PURGE_AIR_POST_EAU,
 	{"Vidange soude terminée", RELAYS_OFF, 0, NULL, NULL},
 	CYCLE_END
 };
@@ -256,7 +251,6 @@ CYCLE_STATE cycle_vide_soude_futs[] = {
 CYCLE_STATE cycle_vide_eau_futs[] = {
 	{"Démarrage ...", RELAYS_OFF, 5, NULL, NULL},
 	VIDANGE_EAU_FUTS,
-	PURGE_AIR_POST_EAU,
 	{"Fin eau", RELAYS_OFF, 5, NULL, NULL},
 	{"Vidange eau terminée", RELAYS_OFF, 0, NULL, NULL},
 	CYCLE_END
