@@ -80,7 +80,7 @@ static bool release_therm() {
 	{"Vidange soude", EV8 | EV5 | EV1B | PUMP, DUREE_VIDANGE, NULL, NULL}
 
 #define PRECHAUFFAGE_SOUDE \
-	{"Préchauffage soude", EV1A | EV5 | EV1B | PUMP | THERM, 1, temp_is_setpoint, NULL}
+	{"Préchauffage soude", 	THERM, 				1, temp_is_setpoint, NULL}
 
 #define RINCAGE_FERMENTEUR \
 	{"Démarrage eau", 	RELAYS_OFF, 		3,	 NULL, NULL},\
@@ -197,7 +197,7 @@ CYCLE_STATE cycle_test_enzymes[] = {
 
 CYCLE_STATE cycle_test_thermo[] = {
 	{ "Initial",				RELAYS_OFF,					1, NULL, NULL },
-	{ "Temp Thermo ...", 		EV1A | EV5 | EV1B | PUMP | THERM, 	1, temp_is_setpoint, NULL},
+	{ "Temp Thermo ...", 		THERM,						1, temp_is_setpoint, NULL},
 	{ "Cooling",				RELAYS_OFF,					10, NULL, NULL },
 	CYCLE_END
 };
