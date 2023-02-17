@@ -17,8 +17,7 @@
 
 #define IO_BOARD_ADDR 0x27
 
-static void relay_thread();
-static int relayThreadId = -1;
+
 static bool ready = false;
 
 static const char* relays_name[16]= {
@@ -102,11 +101,7 @@ void relays_init() {
 	relays_MCP23017_init();
 #endif
 
-    relayThreadId   = threads.addThread(relay_thread, 0);
-	while (!ready) { delay(100); }
-
 	initialized = true;
-
 }
 
 
@@ -154,23 +149,19 @@ static void do_set_relays(uint16_t relays) {
 
 }
 
-static void relay_thread() {
-	int myId = threads.id();
-
-	ready = true;
-	printf("Relay thread ready\n");
-
-	while (true) {
-
-		threads.suspend(myId);
-		threads.yield();
-
-		// takes time.
-		do_set_relays(relays_state);
-	}
+void relays_set_relay_on(uint16_t relay) {
+	relays_set_sync(relays_state | relay);
 }
 
-static void relays_set_state(uint16_t relays) {
+void relays_set_relay_off(uint16_t relay) {
+	relays_set_sync(relays_state & ~relay);
+}
+
+void relays_set_sync(uint16_t relays) {
+
+	if (!initialized)
+		return;
+
 	uint16_t oldstate = relays_state;
 
 	if (oldstate == relays)
@@ -178,41 +169,9 @@ static void relays_set_state(uint16_t relays) {
 
 	relays_state = relays;
 
-//	printf("%s: delayed set relays to 0x%x\n", __func__, relays);
-	
 	if (relay_change_callback)
 		relay_change_callback(relays_state);
 
-	threads.restart(relayThreadId);	
-}
-
-void relays_set_relay_on(uint16_t relay) {
-	if (!initialized)
-		return;
-	relays_set_state(relays_state | relay);
-}
-
-void relays_set_relay_off(uint16_t relay) {
-	if (!initialized)
-		return;
-	relays_set_state(relays_state & ~relay);
-}
-
-void relays_set_all_off() { 
-	if (!initialized)
-		return;
-
-	relays_set_state(0x0000);
-}
-
-void relays_set(uint16_t relays) {
-	if (!initialized)
-		return;
-
-	relays_set_state(relays);
-}
-
-void relays_set_sync(uint16_t relays) {
 	do_set_relays(relays);
 }
 

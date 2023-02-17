@@ -7,10 +7,6 @@ extern void relays_init(void);
 extern void relays_set_relay_on(uint16_t relay_pos);
 extern void relays_set_relay_off(uint16_t relay_pos);
 
-extern void relays_set_all_off();
-
-extern void relays_set(uint16_t relays);
-
 extern void relays_set_sync(uint16_t relays);
 
 typedef void (*relay_callback)(uint16_t relays);
