@@ -21,9 +21,7 @@ static bool temp_is_setpoint() {
 }
 
 
-static bool ack_transfer() {
-	return start_pressed();
-}
+
 
 bool therm_forced = false;
 
@@ -85,7 +83,7 @@ static bool release_therm() {
 #define RINCAGE_FERMENTEUR \
 	{"Démarrage eau", 	RELAYS_OFF, 		3,	 NULL, NULL},\
 	{"Rincage", EV2A | EV4 | EV2B , 		ONE_MINUTE, NULL, NULL},\
-	{"Vidange eau", EV2B, 					5, start_pressed, NULL },\
+	{"Vidange eau", EV2B, 					5*ONE_MINUTE, NULL, NULL },\
 	{"Fin eau", RELAYS_OFF, 				3, NULL, NULL}
 
 #define RINCAGE_FUT \
@@ -121,7 +119,7 @@ CYCLE_STATE Rincage_circuit[] = {
 CYCLE_STATE Transfert[] = {
 	{"Démarrage Transfert", RELAYS_OFF, 5, NULL, NULL},
 	{"Amorçage Transfert", EV4 | EV8 , 1, NULL, NULL},
-	{"Transfert", EV4 | EV8 | PUMP, 1, ack_transfer,	NULL},
+	{"Transfert", EV4 | EV8 | PUMP, 1, start_pressed,	NULL},
 	{"Transfert terminé", RELAYS_OFF, 5, NULL, NULL},
 	CYCLE_END
 };
